@@ -1,13 +1,17 @@
-REST Assured
+Search API
 ==================
 
-RestAssured will provide foundation for any developer who wants to write REST client application. RestAssured will load the REST output into lucene allowing the developer to schemaless application.
+Search API's RestAssuredService will provide foundation for developers who wants to write client application for some REST based resource by allowing developer to store the resources as in a schema-less storage system and access this resource as programmable objects as opposed to a REST resource.
 
 Features:
-- JSON transformation configuration (j2l) file. The file will allow client application to define how to transform JSON into lucene indexer
-- Registering transformation algorithm to allow client to define how to transform JSON into java objectClass
-- Search API to search JSON based on keyword inside the index and transform the JSON based on registered algorithm
+- Transform a single resource into certain object type and access the resource in form of object.
 
-Nyoman Ribeka
+Requirements:
+- Algorithm to define how to transform REST resource into the correct Java based object.
+- Resolver to define where the Search API will find the REST resources.
+- Domain object representation of the REST resource.
+- Configuration document to tie all the above together.
 
-nyoman@openmrs.org
+Check the sample in the code to see how to do this. Happy coding!
+
+- Muzima Team -
