@@ -1,0 +1,14 @@
+# Resource configuration
+resource.name=Patient Resource
+node.root=$
+resource.object=com.mclinic.search.api.sample.domain.Patient
+algorithm.class=com.mclinic.search.api.sample.algorithm.PatientAlgorithm
+resolver.class=com.mclinic.search.api.sample.resolver.PatientResolver
+field.unique=name
+# Mapping
+uuid=$.uuid
+identifier=$.identifiers[0].identifier
+name=$.person.display
+age=$.person.age
+gender=$.person.gender
+birthdate=$.person.birthdate

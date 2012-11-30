@@ -1,0 +1,10 @@
+# Resource configuration
+resource.name=Cohort Resource
+node.root=$.results
+resource.object=com.mclinic.search.api.sample.domain.Cohort
+algorithm.class=com.mclinic.search.api.sample.algorithm.CohortAlgorithm
+resolver.class=com.mclinic.search.api.sample.resolver.CohortResolver
+field.unique=uuid
+# Mapping
+uuid=$.uuid
+name=$.display
