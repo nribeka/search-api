@@ -17,7 +17,7 @@
 package com.mclinic.search.api;
 
 import com.mclinic.search.api.internal.file.ResourceFileFilter;
-import com.mclinic.search.api.module.UnitTestModule;
+import com.mclinic.search.api.module.JUnitModule;
 import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.resolver.Resolver;
 import com.mclinic.search.api.resource.ObjectResource;
@@ -41,14 +41,40 @@ import com.mclinic.search.api.serialization.Algorithm;
 import com.mclinic.search.api.util.ResourceUtil;
 import com.mclinic.search.api.util.StringUtil;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ServiceContextTest {
+
+    @Before
+    public void prepare() throws Exception {
+        // initialize context object with additional parameters from the junit module
+        Context.initialize(new JUnitModule());
+
+        // register algorithms classes for the testing
+        Context.registerAlgorithm(PatientAlgorithm.class);
+        Context.registerAlgorithm(CohortAlgorithm.class);
+        Context.registerAlgorithm(CohortMemberAlgorithm.class);
+        Context.registerAlgorithm(ObservationAlgorithm.class);
+
+        // register resolver classes for the testing
+        Context.registerResolver(PatientResolver.class);
+        Context.registerResolver(CohortResolver.class);
+        Context.registerResolver(CohortMemberResolver.class);
+        Context.registerResolver(ObservationResolver.class);
+
+        // register domain object classes for the testing
+        Context.registerObject(Patient.class);
+        Context.registerObject(Cohort.class);
+        Context.registerObject(Observation.class);
+    }
 
     /**
      * @verifies register programmatically created resource object.
@@ -56,13 +82,12 @@ public class ServiceContextTest {
      */
     @Test
     public void registerResource_shouldRegisterProgrammaticallyCreatedResourceObject() throws Exception {
-        String rootNode = "$";
         String resourceName = "Example Resource";
-        Algorithm algorithm = new PatientAlgorithm();
-        Resolver resolver = new PatientResolver();
-        Resource resource = new ObjectResource(resourceName, rootNode, Patient.class, algorithm, resolver);
 
-        Context.initialize(new UnitTestModule());
+        Resource resource = Mockito.mock(Resource.class);
+        Mockito.when(resource.getName()).thenReturn(resourceName);
+
+        Context.initialize(new JUnitModule());
         Context.registerResource(resource);
         // check the registration process
         Assert.assertTrue(Context.getResources().size() > 0);
@@ -70,12 +95,6 @@ public class ServiceContextTest {
         // check the registered resource internal property
         Resource registeredResource = Context.getResource(resourceName);
         Assert.assertNotNull(registeredResource);
-        Assert.assertEquals(rootNode, registeredResource.getRootNode());
-        Assert.assertEquals(Patient.class, registeredResource.getResourceObject());
-        Assert.assertEquals(algorithm, registeredResource.getAlgorithm());
-        Assert.assertEquals(resolver, registeredResource.getResolver());
-        Assert.assertTrue(Algorithm.class.isAssignableFrom(registeredResource.getAlgorithm().getClass()));
-        Assert.assertTrue(Resolver.class.isAssignableFrom(registeredResource.getResolver().getClass()));
     }
 
     /**
@@ -84,13 +103,12 @@ public class ServiceContextTest {
      */
     @Test
     public void registerResource_shouldNotRegisterResourceWithoutResourceName() throws Exception {
-        String rootNode = "$";
         String resourceName = null;
-        Algorithm algorithm = new PatientAlgorithm();
-        Resolver resolver = new PatientResolver();
-        Resource resource = new ObjectResource(resourceName, rootNode, Patient.class, algorithm, resolver);
 
-        Context.initialize(new UnitTestModule());
+        Resource resource = Mockito.mock(Resource.class);
+        Mockito.when(resource.getName()).thenReturn(resourceName);
+
+        Context.initialize(new JUnitModule());
         Context.registerResource(resource);
         // check the registration process
         Assert.assertTrue(Context.getResources().size() == 0);
@@ -105,15 +123,6 @@ public class ServiceContextTest {
 
         URL url = Context.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerObject(Patient.class, Cohort.class, Observation.class);
-        Context.registerAlgorithm(CohortAlgorithm.class, CohortMemberAlgorithm.class, PatientAlgorithm.class,
-                ObservationAlgorithm.class);
-        Context.registerResolver(CohortResolver.class, CohortMemberResolver.class, PatientResolver.class,
-                ObservationResolver.class);
-
         Context.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
@@ -130,15 +139,6 @@ public class ServiceContextTest {
 
         URL url = Context.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerObject(Patient.class, Cohort.class, Observation.class);
-        Context.registerAlgorithm(CohortAlgorithm.class, CohortMemberAlgorithm.class, PatientAlgorithm.class,
-                ObservationAlgorithm.class);
-        Context.registerResolver(CohortResolver.class, CohortMemberResolver.class, PatientResolver.class,
-                ObservationResolver.class);
-
         Context.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
@@ -173,15 +173,6 @@ public class ServiceContextTest {
 
         URL url = Context.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerObject(Patient.class, Cohort.class, Observation.class);
-        Context.registerAlgorithm(CohortAlgorithm.class, CohortMemberAlgorithm.class, PatientAlgorithm.class,
-                ObservationAlgorithm.class);
-        Context.registerResolver(CohortResolver.class, CohortMemberResolver.class, PatientResolver.class,
-                ObservationResolver.class);
-
         Context.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
@@ -203,15 +194,6 @@ public class ServiceContextTest {
 
         URL url = Context.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerObject(Patient.class, Cohort.class, Observation.class);
-        Context.registerAlgorithm(CohortAlgorithm.class, CohortMemberAlgorithm.class, PatientAlgorithm.class,
-                ObservationAlgorithm.class);
-        Context.registerResolver(CohortResolver.class, CohortMemberResolver.class, PatientResolver.class,
-                ObservationResolver.class);
-
         Context.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
@@ -226,14 +208,10 @@ public class ServiceContextTest {
 
     /**
      * @verifies register all domain object classes in the domain object registry.
-     * @see Context#registerObject(Class...)
+     * @see Context#registerObjects(java.util.Collection)
      */
     @Test
     public void registerObject_shouldRegisterAllDomainObjectClassesInTheDomainObjectRegistry() throws Exception {
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerObject(Patient.class, Observation.class, Encounter.class, Billing.class);
         Class clazz = Context.removeObject(Patient.class);
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Patient.class.getName(), clazz.getName());
@@ -242,28 +220,24 @@ public class ServiceContextTest {
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Observation.class.getName(), clazz.getName());
 
-        clazz = Context.removeObject(Encounter.class);
+        clazz = Context.removeObject(Cohort.class);
         Assert.assertNotNull(clazz);
-        Assert.assertEquals(Encounter.class.getName(), clazz.getName());
+        Assert.assertEquals(Cohort.class.getName(), clazz.getName());
 
         clazz = Context.removeObject(Patient.class);
         Assert.assertNull(clazz);
         clazz = Context.removeObject(Observation.class);
         Assert.assertNull(clazz);
-        clazz = Context.removeObject(Encounter.class);
+        clazz = Context.removeObject(Cohort.class);
         Assert.assertNull(clazz);
     }
 
     /**
      * @verifies register all algorithm classes in the algorithm registry.
-     * @see Context#registerAlgorithm(Class...)
+     * @see Context#registerAlgorithms(java.util.Collection)
      */
     @Test
     public void registerAlgorithm_shouldRegisterAllAlgorithmClassesInTheAlgorithmRegistry() throws Exception {
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerAlgorithm(PatientAlgorithm.class, CohortMemberAlgorithm.class);
         Class<? extends Algorithm> clazz = Context.removeAlgorithm(PatientAlgorithm.class);
         Assert.assertNotNull(clazz);
         Assert.assertEquals(PatientAlgorithm.class.getName(), clazz.getName());
@@ -280,14 +254,10 @@ public class ServiceContextTest {
 
     /**
      * @verifies register all resolver classes in the resolve registry.
-     * @see Context#registerResolver(Class...)
+     * @see Context#registerResolvers(java.util.Collection)
      */
     @Test
     public void registerResolver_shouldRegisterAllResolverClassesInTheResolveRegistry() throws Exception {
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerResolver(PatientResolver.class, CohortMemberResolver.class);
         Class<? extends Resolver> clazz = Context.removeResolver(PatientResolver.class);
         Assert.assertNotNull(clazz);
         Assert.assertEquals(PatientResolver.class.getName(), clazz.getName());
@@ -311,15 +281,6 @@ public class ServiceContextTest {
 
         URL url = Context.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-
-        Context.initialize(new UnitTestModule());
-
-        Context.registerObject(Patient.class, Cohort.class, Observation.class);
-        Context.registerAlgorithm(CohortAlgorithm.class, CohortMemberAlgorithm.class, PatientAlgorithm.class,
-                ObservationAlgorithm.class);
-        Context.registerResolver(CohortResolver.class, CohortMemberResolver.class, PatientResolver.class,
-                ObservationResolver.class);
-
         Context.registerResources(resourceFile);
 
         int resourceCounter = Context.getResources().size();

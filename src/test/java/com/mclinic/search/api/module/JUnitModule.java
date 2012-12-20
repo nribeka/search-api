@@ -16,11 +16,15 @@
 
 package com.mclinic.search.api.module;
 
+import java.io.File;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import com.mclinic.search.api.logger.LogLevel;
 
 public class JUnitModule extends AbstractModule {
+
+    public static final String LUCENE_DIRECTORY = File.separator + "lucene";
 
     /**
      * Configures a {@link com.google.inject.Binder} via the exposed methods.
@@ -28,8 +32,12 @@ public class JUnitModule extends AbstractModule {
     @Override
     protected void configure() {
         String tmpDirectory = System.getProperty("java.io.tmpdir");
-        bind(String.class).annotatedWith(Names.named("configuration.lucene.directory")).toInstance(tmpDirectory);
-        bind(String.class).annotatedWith(Names.named("configuration.lucene.document.key")).toInstance("uuid");
+        bind(String.class)
+                .annotatedWith(Names.named("configuration.lucene.directory"))
+                .toInstance(tmpDirectory  + LUCENE_DIRECTORY);
+        bind(String.class)
+                .annotatedWith(Names.named("configuration.lucene.document.key"))
+                .toInstance("uuid");
 
         bind(LogLevel.class).toInstance(LogLevel.DEBUG);
     }

@@ -59,7 +59,7 @@ public class ServiceContext {
     @Inject
     private RestAssuredService restAssuredService;
 
-    public RestAssuredService getRestAssuredService() {
+    protected RestAssuredService getRestAssuredService() {
         return restAssuredService;
     }
 
@@ -182,9 +182,13 @@ public class ServiceContext {
      * @param classes the domain object classes.
      * @should register all domain object classes in the domain object registry.
      */
-    public void registerObject(final Class<?>... classes) {
+    public void registerObjects(final Collection<Class<?>> classes) {
         for (Class<?> clazz : classes)
             classRegistry.putEntry(clazz.getName(), clazz);
+    }
+
+    public void registerObject(final Class<?> clazz) {
+        classRegistry.putEntry(clazz.getName(), clazz);
     }
 
     public Class<?> removeObject(final Class<?> clazz) {
@@ -197,9 +201,13 @@ public class ServiceContext {
      * @param algorithms the algorithm classes.
      * @should register all algorithm classes in the algorithm registry.
      */
-    public void registerAlgorithm(final Class<? extends Algorithm>... algorithms) {
+    public void registerAlgorithms(final Collection<Class<? extends Algorithm>> algorithms) {
         for (Class<? extends Algorithm> algorithm : algorithms)
             algorithmFactory.registerImplementation(algorithm.getName(), algorithm);
+    }
+
+    public void registerAlgorithm(final Class<? extends Algorithm> algorithm) {
+        algorithmFactory.registerImplementation(algorithm.getName(), algorithm);
     }
 
     public Class<? extends Algorithm> removeAlgorithm(final Class<? extends Algorithm> algorithm) {
@@ -212,9 +220,13 @@ public class ServiceContext {
      * @param resolvers the resolver classes
      * @should register all resolver classes in the resolve registry.
      */
-    public void registerResolver(final Class<? extends Resolver>... resolvers) {
+    public void registerResolvers(final Collection<Class<? extends Resolver>> resolvers) {
         for (Class<? extends Resolver> resolver : resolvers)
             resolverFactory.registerImplementation(resolver.getName(), resolver);
+    }
+
+    public void registerResolver(final Class<? extends Resolver> resolver) {
+        resolverFactory.registerImplementation(resolver.getName(), resolver);
     }
 
     public Class<? extends Resolver> removeResolver(final Class<? extends Resolver> resolver) {
