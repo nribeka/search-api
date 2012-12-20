@@ -20,7 +20,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import com.mclinic.search.api.logger.LogLevel;
 
-public class UnitTestModule extends AbstractModule {
+public class JUnitModule extends AbstractModule {
 
     /**
      * Configures a {@link com.google.inject.Binder} via the exposed methods.
