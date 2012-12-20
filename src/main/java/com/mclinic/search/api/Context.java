@@ -129,8 +129,12 @@ public class Context {
      * @param classes the domain object classes.
      * @should register all domain object classes in the domain object registry.
      */
-    public static void registerObject(final Class<?>... classes) {
-        getServiceContext().registerObject(classes);
+    public static void registerObjects(final Collection<Class<?>> classes) {
+        getServiceContext().registerObjects(classes);
+    }
+
+    public static void registerObject(final Class<?> clazz) {
+        getServiceContext().registerObject(clazz);
     }
 
     public static Class<?> removeObject(final Class<?> clazz) {
@@ -143,8 +147,12 @@ public class Context {
      * @param algorithms the algorithm classes.
      * @should register all algorithm classes in the algorithm registry.
      */
-    public static void registerAlgorithm(final Class<? extends Algorithm>... algorithms) {
-        getServiceContext().registerAlgorithm(algorithms);
+    public static void registerAlgorithms(final Collection<Class<? extends Algorithm>> algorithms) {
+        getServiceContext().registerAlgorithms(algorithms);
+    }
+
+    public static void registerAlgorithm(final Class<? extends Algorithm> algorithm) {
+        getServiceContext().registerAlgorithm(algorithm);
     }
 
     public static Class<? extends Algorithm> removeAlgorithm(final Class<? extends Algorithm> algorithm) {
@@ -157,8 +165,12 @@ public class Context {
      * @param resolvers the resolver classes
      * @should register all resolver classes in the resolve registry.
      */
-    public static void registerResolver(final Class<? extends Resolver>... resolvers) {
-        getServiceContext().registerResolver(resolvers);
+    public static void registerResolvers(final Collection<Class<? extends Resolver>> resolvers) {
+        getServiceContext().registerResolvers(resolvers);
+    }
+
+    public static void registerResolver(final Class<? extends Resolver> resolver) {
+        getServiceContext().registerResolver(resolver);
     }
 
     public static Class<? extends Resolver> removeResolver(final Class<? extends Resolver> resolver) {

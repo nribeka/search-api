@@ -35,7 +35,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
     private final Indexer indexer;
 
     @Inject
-    public RestAssuredServiceImpl(final Indexer indexer) {
+    protected RestAssuredServiceImpl(final Indexer indexer) {
         this.indexer = indexer;
     }
 
