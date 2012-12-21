@@ -82,8 +82,8 @@ public class RestAssuredServiceTest {
         // register domain object classes for the testing
         Context.registerObject(Patient.class);
 
-        URL j2l = RestAssuredService.class.getResource(CORPUS_CONFIGURATION_FILE);
-        Context.registerResources(new File(j2l.getPath()));
+        URL configurationUri = RestAssuredService.class.getResource(CORPUS_CONFIGURATION_FILE);
+        Context.registerResources(new File(configurationUri.getPath()));
 
         Resource resource = Context.getResource(PATIENT_RESOURCE);
         Assert.assertNotNull(resource);
