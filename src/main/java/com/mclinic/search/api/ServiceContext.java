@@ -195,6 +195,10 @@ public class ServiceContext {
         return classRegistry.removeEntry(clazz.getName());
     }
 
+    public boolean containsObject(final Class<?> clazz) {
+        return classRegistry.hasEntry(clazz.getName());
+    }
+
     /**
      * Register all algorithm classes.
      *
@@ -210,7 +214,7 @@ public class ServiceContext {
         algorithmFactory.registerImplementation(algorithm.getName(), algorithm);
     }
 
-    public Class<? extends Algorithm> removeAlgorithm(final Class<? extends Algorithm> algorithm) {
+    public Class<? extends Algorithm> getAlgorithm(final Class<? extends Algorithm> algorithm) {
         return algorithmFactory.getMapping(algorithm.getName());
     }
 
@@ -229,7 +233,7 @@ public class ServiceContext {
         resolverFactory.registerImplementation(resolver.getName(), resolver);
     }
 
-    public Class<? extends Resolver> removeResolver(final Class<? extends Resolver> resolver) {
+    public Class<? extends Resolver> getResolver(final Class<? extends Resolver> resolver) {
         return resolverFactory.getMapping(resolver.getName());
     }
 }

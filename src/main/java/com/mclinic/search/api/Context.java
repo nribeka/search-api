@@ -141,6 +141,10 @@ public class Context {
         return getServiceContext().removeObject(clazz);
     }
 
+    public boolean containsObject(final Class<?> clazz) {
+        return getServiceContext().containsObject(clazz);
+    }
+
     /**
      * Register all algorithm classes.
      *
@@ -155,8 +159,8 @@ public class Context {
         getServiceContext().registerAlgorithm(algorithm);
     }
 
-    public static Class<? extends Algorithm> removeAlgorithm(final Class<? extends Algorithm> algorithm) {
-        return getServiceContext().removeAlgorithm(algorithm);
+    public static Class<? extends Algorithm> getAlgorithm(final Class<? extends Algorithm> algorithm) {
+        return getServiceContext().getAlgorithm(algorithm);
     }
 
     /**
@@ -173,7 +177,7 @@ public class Context {
         getServiceContext().registerResolver(resolver);
     }
 
-    public static Class<? extends Resolver> removeResolver(final Class<? extends Resolver> resolver) {
-        return getServiceContext().removeResolver(resolver);
+    public static Class<? extends Resolver> getResolver(final Class<? extends Resolver> resolver) {
+        return getServiceContext().getResolver(resolver);
     }
 }

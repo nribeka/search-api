@@ -20,7 +20,6 @@ import com.mclinic.search.api.internal.file.ResourceFileFilter;
 import com.mclinic.search.api.module.JUnitModule;
 import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.resolver.Resolver;
-import com.mclinic.search.api.resource.ObjectResource;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.resource.ResourceConstants;
 import com.mclinic.search.api.resource.SearchableField;
@@ -28,9 +27,7 @@ import com.mclinic.search.api.sample.algorithm.CohortAlgorithm;
 import com.mclinic.search.api.sample.algorithm.CohortMemberAlgorithm;
 import com.mclinic.search.api.sample.algorithm.ObservationAlgorithm;
 import com.mclinic.search.api.sample.algorithm.PatientAlgorithm;
-import com.mclinic.search.api.sample.domain.Billing;
 import com.mclinic.search.api.sample.domain.Cohort;
-import com.mclinic.search.api.sample.domain.Encounter;
 import com.mclinic.search.api.sample.domain.Observation;
 import com.mclinic.search.api.sample.domain.Patient;
 import com.mclinic.search.api.sample.resolver.CohortMemberResolver;
@@ -47,7 +44,6 @@ import org.mockito.Mockito;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -238,18 +234,13 @@ public class ServiceContextTest {
      */
     @Test
     public void registerAlgorithm_shouldRegisterAllAlgorithmClassesInTheAlgorithmRegistry() throws Exception {
-        Class<? extends Algorithm> clazz = Context.removeAlgorithm(PatientAlgorithm.class);
+        Class<? extends Algorithm> clazz = Context.getAlgorithm(PatientAlgorithm.class);
         Assert.assertNotNull(clazz);
         Assert.assertEquals(PatientAlgorithm.class.getName(), clazz.getName());
 
-        clazz = Context.removeAlgorithm(CohortMemberAlgorithm.class);
+        clazz = Context.getAlgorithm(CohortMemberAlgorithm.class);
         Assert.assertNotNull(clazz);
         Assert.assertEquals(CohortMemberAlgorithm.class.getName(), clazz.getName());
-
-        clazz = Context.removeAlgorithm(PatientAlgorithm.class);
-        Assert.assertNotNull(clazz);
-        clazz = Context.removeAlgorithm(CohortMemberAlgorithm.class);
-        Assert.assertNotNull(clazz);
     }
 
     /**
@@ -258,18 +249,13 @@ public class ServiceContextTest {
      */
     @Test
     public void registerResolver_shouldRegisterAllResolverClassesInTheResolveRegistry() throws Exception {
-        Class<? extends Resolver> clazz = Context.removeResolver(PatientResolver.class);
+        Class<? extends Resolver> clazz = Context.getResolver(PatientResolver.class);
         Assert.assertNotNull(clazz);
         Assert.assertEquals(PatientResolver.class.getName(), clazz.getName());
 
-        clazz = Context.removeResolver(CohortMemberResolver.class);
+        clazz = Context.getResolver(CohortMemberResolver.class);
         Assert.assertNotNull(clazz);
         Assert.assertEquals(CohortMemberResolver.class.getName(), clazz.getName());
-
-        clazz = Context.removeResolver(PatientResolver.class);
-        Assert.assertNotNull(clazz);
-        clazz = Context.removeResolver(CohortMemberResolver.class);
-        Assert.assertNotNull(clazz);
     }
 
     /**
