@@ -44,17 +44,14 @@ public class ConsoleLogger extends BaseLogger {
     protected void doLog(final LogLevel logLevel, final String source, final String message,
                          final Throwable throwable) {
         StringBuilder logBuilder = new StringBuilder();
-        String lineSeparator = System.getProperty("line.separator", "\n");
 
         logBuilder.append("[").append(dateFormat.format(new Date())).append("]");
         logBuilder.append("[").append(logLevel.getName()).append("]");
         logBuilder.append("[").append(source).append("]");
         logBuilder.append(message);
+        System.out.println(logBuilder.toString());
 
         if (throwable != null)
-            logBuilder.append(lineSeparator).append(throwable).append(lineSeparator);
-
-        String log = logBuilder.toString();
-        System.out.println(log);
+            throwable.printStackTrace();
     }
 }
