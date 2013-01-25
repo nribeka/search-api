@@ -30,4 +30,8 @@ public class FilenameUtil {
         }
         return extension;
     }
+
+    public static boolean contains(final String filename, final String subset) {
+        return filename.toLowerCase().contains(subset.toLowerCase());
+    }
 }

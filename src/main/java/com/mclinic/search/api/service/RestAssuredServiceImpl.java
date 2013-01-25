@@ -21,6 +21,7 @@ import com.mclinic.search.api.RestAssuredService;
 import com.mclinic.search.api.internal.lucene.Indexer;
 import com.mclinic.search.api.resolver.Resolver;
 import com.mclinic.search.api.resource.Resource;
+import com.mclinic.search.api.util.FilenameUtil;
 import org.apache.lucene.queryParser.ParseException;
 
 import java.io.File;
@@ -85,7 +86,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
 
     private void loadObjects(final String searchString, final Resource resource, final File file,
                              final boolean commit) throws ParseException, IOException {
-        if (!file.isDirectory()) {
+        if (!file.isDirectory() && FilenameUtil.contains(file.getName(), searchString)) {
             FileInputStream stream = null;
             try {
                 stream = new FileInputStream(file);
