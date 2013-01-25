@@ -31,7 +31,7 @@ public class CohortAlgorithm implements Algorithm {
     @Override
     public Object deserialize(final String serialized) {
         Cohort cohort = new Cohort();
-
+        // TODO: remember that performing JsonPath.read() followed by toString() might get us into NPE
         Object jsonObject = JsonPath.read(serialized, "$");
         String uuid = JsonPath.read(jsonObject, "$.uuid");
         cohort.setUuid(uuid);
