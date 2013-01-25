@@ -194,21 +194,25 @@ public class DefaultIndexer implements Indexer {
         StringBuilder fullQuery = new StringBuilder();
         StringBuilder uniqueQuery = new StringBuilder();
         for (SearchableField searchableField : searchableFields) {
-            String value = JsonPath.read(jsonObject, searchableField.getExpression()).toString();
-            String query = createQuery(searchableField.getName(), value);
+            // we shouldn't include field that have null / empty value in the query
+            Object valueObject = JsonPath.read(jsonObject, searchableField.getExpression());
+            if (valueObject != null) {
+                String value = valueObject.toString();
+                String query = createQuery(searchableField.getName(), value);
 
-            if (searchableField.isUnique()) {
-                uniqueExists = true;
-                if (!StringUtil.isBlank(uniqueQuery.toString()))
-                    uniqueQuery.append(" AND ");
-                uniqueQuery.append(query);
-            }
+                if (searchableField.isUnique()) {
+                    uniqueExists = true;
+                    if (!StringUtil.isBlank(uniqueQuery.toString()))
+                        uniqueQuery.append(" AND ");
+                    uniqueQuery.append(query);
+                }
 
-            // only create the full query if we haven't found any unique key in the searchable fields.
-            if (!uniqueExists) {
-                if (!StringUtil.isBlank(fullQuery.toString()))
-                    fullQuery.append(" AND ");
-                fullQuery.append(query);
+                // only create the full query if we haven't found any unique key in the searchable fields.
+                if (!uniqueExists) {
+                    if (!StringUtil.isBlank(fullQuery.toString()))
+                        fullQuery.append(" AND ");
+                    fullQuery.append(query);
+                }
             }
         }
 
@@ -292,9 +296,11 @@ public class DefaultIndexer implements Indexer {
                 Field.Index.ANALYZED_NO_NORMS));
 
         for (SearchableField searchableField : resource.getSearchableFields()) {
-            Object value = JsonPath.read(jsonObject, searchableField.getExpression());
-            document.add(new Field(searchableField.getName(), String.valueOf(value), Field.Store.YES,
-                    Field.Index.ANALYZED_NO_NORMS));
+            Object valueObject = JsonPath.read(jsonObject, searchableField.getExpression());
+            String value = StringUtil.EMPTY;
+            if (valueObject != null)
+                value = valueObject.toString();
+            document.add(new Field(searchableField.getName(), value, Field.Store.YES, Field.Index.ANALYZED_NO_NORMS));
         }
 
         if (getLogger().isDebugEnabled())
