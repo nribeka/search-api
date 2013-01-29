@@ -18,6 +18,7 @@ package com.mclinic.search.api.module;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.name.Names;
 import com.google.inject.throwingproviders.ThrowingProviderBinder;
 import com.mclinic.search.api.RestAssuredService;
 import com.mclinic.search.api.internal.lucene.DefaultIndexer;
@@ -45,6 +46,9 @@ public class SearchModule extends AbstractModule {
      */
     @Override
     protected void configure() {
+        bind(Integer.class)
+                .annotatedWith(Names.named("connection.timeout"))
+                .toInstance(1000);
         bind(RestAssuredService.class).to(RestAssuredServiceImpl.class).in(Singleton.class);
         bind(Indexer.class).to(DefaultIndexer.class).in(Singleton.class);
         bind(Logger.class).to(ConsoleLogger.class).in(Singleton.class);
