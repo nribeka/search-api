@@ -17,6 +17,7 @@
 package com.mclinic.search.api.service;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.mclinic.search.api.RestAssuredService;
 import com.mclinic.search.api.internal.lucene.Indexer;
 import com.mclinic.search.api.resolver.Resolver;
@@ -34,6 +35,10 @@ import java.util.List;
 public class RestAssuredServiceImpl implements RestAssuredService {
 
     private final Indexer indexer;
+
+    @Inject
+    @Named("connection.timeout")
+    private int timeout;
 
     @Inject
     protected RestAssuredServiceImpl(final Indexer indexer) {
@@ -62,6 +67,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
 
         URL url = new URL(resolver.resolve(searchString));
         URLConnection connection = url.openConnection();
+        connection.setConnectTimeout(timeout);
         connection = resolver.authenticate(connection);
 
         indexer.loadObjects(resource, connection.getInputStream());
