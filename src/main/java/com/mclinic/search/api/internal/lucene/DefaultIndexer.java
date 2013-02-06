@@ -180,22 +180,22 @@ public class DefaultIndexer implements Indexer {
     }
 
     /**
-     * Create lucene query string based on the searchable field name and value. The values for the searchable field
-     * will be retrieved from the <code>jsonObject</code>. This method will try to create a unique query in the case
+     * Create lucene query string based on the searchable field name and value. The value for the searchable field
+     * will be retrieved from the <code>object</code>. This method will try to create a unique query in the case
      * where a searchable field is marked as unique. Otherwise the method will create a query string using all
      * available searchable fields.
      *
-     * @param jsonObject       the json object from which the value for each field can be retrieved from.
-     * @param searchableFields the searchable fields definition
+     * @param object the json object from which the value for each field can be retrieved from.
+     * @param fields the searchable fields definition
      * @return query string which could be either a unique or full searchable field based query.
      */
-    private String createSearchableFieldQuery(final Object jsonObject, final List<SearchableField> searchableFields) {
+    private String createObjectQuery(final Object object, final List<SearchableField> fields) {
         boolean uniqueExists = false;
         StringBuilder fullQuery = new StringBuilder();
         StringBuilder uniqueQuery = new StringBuilder();
-        for (SearchableField searchableField : searchableFields) {
+        for (SearchableField searchableField : fields) {
             // we shouldn't include field that have null / empty value in the query
-            Object valueObject = JsonPath.read(jsonObject, searchableField.getExpression());
+            Object valueObject = JsonPath.read(object, searchableField.getExpression());
             if (valueObject != null) {
                 String value = valueObject.toString();
                 String query = createQuery(searchableField.getName(), value);
@@ -288,9 +288,9 @@ public class DefaultIndexer implements Indexer {
 
         Document document = new Document();
         document.add(new Field(DEFAULT_FIELD_JSON, jsonObject.toString(), Field.Store.YES, Field.Index.NO));
-        document.add(new Field(DEFAULT_FIELD_UUID, UUID.randomUUID().toString(), Field.Store.YES,
+        document.add(new Field(DEFAULT_FIELD_UUID, UUID.randomUUID().toString(), Field.Store.NO,
                 Field.Index.ANALYZED_NO_NORMS));
-        document.add(new Field(DEFAULT_FIELD_CLASS, resource.getResourceObject().getName(), Field.Store.YES,
+        document.add(new Field(DEFAULT_FIELD_CLASS, resource.getResourceObject().getName(), Field.Store.NO,
                 Field.Index.ANALYZED_NO_NORMS));
         document.add(new Field(DEFAULT_FIELD_RESOURCE, resource.getName(), Field.Store.YES,
                 Field.Index.ANALYZED_NO_NORMS));
@@ -300,7 +300,7 @@ public class DefaultIndexer implements Indexer {
             String value = StringUtil.EMPTY;
             if (valueObject != null)
                 value = valueObject.toString();
-            document.add(new Field(searchableField.getName(), value, Field.Store.YES, Field.Index.ANALYZED_NO_NORMS));
+            document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.ANALYZED_NO_NORMS));
         }
 
         if (getLogger().isDebugEnabled())
@@ -322,8 +322,8 @@ public class DefaultIndexer implements Indexer {
     private void deleteObject(final Object jsonObject, final Resource resource, final IndexWriter indexWriter)
             throws ParseException, IOException {
         String queryString =
-                createResourceQuery(resource) + " AND "
-                        + createSearchableFieldQuery(jsonObject, resource.getSearchableFields());
+                createResourceQuery(resource)
+                        + " AND (" + createObjectQuery(jsonObject, resource.getSearchableFields()) + ")";
 
         if (getLogger().isDebugEnabled())
             getLogger().debug(this.getClass().getSimpleName(), "Query deleteObject(): " + queryString);
@@ -408,7 +408,7 @@ public class DefaultIndexer implements Indexer {
 
         String queryString = createResourceQuery(resource);
         if (!StringUtil.isEmpty(key))
-            queryString = queryString + " AND " + key;
+            queryString = queryString + " AND (" + key + ")";
 
         if (getLogger().isDebugEnabled())
             getLogger().debug(this.getClass().getSimpleName(), "Query getObject(String,  Resource): " + queryString);
@@ -435,7 +435,7 @@ public class DefaultIndexer implements Indexer {
 
         String queryString = createClassQuery(clazz);
         if (!StringUtil.isEmpty(searchString))
-            queryString = queryString + " AND " + searchString;
+            queryString = queryString + " AND (" + searchString + ")";
 
         if (getLogger().isDebugEnabled())
             getLogger().debug(this.getClass().getSimpleName(), "Query getObjects(String, Class): " + queryString);
@@ -459,7 +459,7 @@ public class DefaultIndexer implements Indexer {
 
         String queryString = createResourceQuery(resource);
         if (!StringUtil.isEmpty(searchString))
-            queryString = queryString + " AND " + searchString;
+            queryString = queryString + " AND (" + searchString + ")";
 
         if (getLogger().isDebugEnabled())
             getLogger().debug(this.getClass().getSimpleName(), "Query getObjects(String, Resource): " + queryString);
