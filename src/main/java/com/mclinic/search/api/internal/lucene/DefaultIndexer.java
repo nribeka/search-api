@@ -164,6 +164,7 @@ public class DefaultIndexer implements Indexer {
             getIndexWriter().close();
         }
         // remove the instance
+        // TODO: need a better to gracefully remove the instances
         setIndexWriter(null);
         setIndexSearcher(null);
     }
@@ -298,6 +299,7 @@ public class DefaultIndexer implements Indexer {
         for (SearchableField searchableField : resource.getSearchableFields()) {
             Object valueObject = JsonPath.read(jsonObject, searchableField.getExpression());
             String value = StringUtil.EMPTY;
+            // TODO: need a better way to handle this value
             if (valueObject != null)
                 value = valueObject.toString();
             document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.ANALYZED_NO_NORMS));
@@ -330,9 +332,11 @@ public class DefaultIndexer implements Indexer {
 
         Query query = parser.parse(queryString);
         List<Document> documents = findDocuments(query);
-        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1)
+        // only delete object if we can uniquely identify the object
+        if (documents.size() == 1)
+            indexWriter.deleteDocuments(query);
+        else if (documents.size() > 1)
             throw new IOException("Unable to uniquely identify an object using the json object in the repository.");
-        indexWriter.deleteDocuments(query);
     }
 
     /**

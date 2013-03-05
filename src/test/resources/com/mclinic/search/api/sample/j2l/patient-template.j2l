@@ -4,7 +4,7 @@ node.root=$
 resource.object=com.mclinic.search.api.sample.domain.Patient
 algorithm.class=com.mclinic.search.api.sample.algorithm.PatientAlgorithm
 resolver.class=com.mclinic.search.api.sample.resolver.PatientResolver
-field.unique=name
+field.unique=uuid
 # Mapping
 uuid=$.uuid
 identifier=$.identifiers[0].identifier
