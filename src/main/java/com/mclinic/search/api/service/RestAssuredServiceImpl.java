@@ -69,7 +69,12 @@ public class RestAssuredServiceImpl implements RestAssuredService {
         URLConnection connection = url.openConnection();
         connection.setConnectTimeout(timeout);
         connection = resolver.authenticate(connection);
-
+        // TODO: need to handle paging
+        // - one of the solution probably merging this loadObject into:
+        //   - loadObject(final Resource resource, final String payload)
+        //   - this method then will read the response from the server
+        //   - delegate the paging handling to the subclass (if applicable).
+        // - short term solution: increase the page size
         indexer.loadObjects(resource, connection.getInputStream());
         indexer.commit();
     }

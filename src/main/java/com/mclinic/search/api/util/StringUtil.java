@@ -16,6 +16,7 @@
 
 package com.mclinic.search.api.util;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,11 +37,46 @@ public class StringUtil {
 
     /**
      * <pre>
-     * StringUtils.isEmpty(null)      = true
-     * StringUtils.isEmpty("")        = true
-     * StringUtils.isEmpty(" ")       = false
-     * StringUtils.isEmpty("bob")     = false
-     * StringUtils.isEmpty("  bob  ") = false
+     *     StringUtil.escapeUri("localhost:8081/" = "localhost\:8081\/"
+     * </pre>
+     * @param uri the uri to be escaped
+     * @return the escaped uri
+     */
+    public static String escapeUri(final String uri) {
+        StringWriter writer = new StringWriter(uri.length() * 2);
+
+        int size = uri.length();
+        for (int i = 0; i < size; i++) {
+            char ch = uri.charAt(i);
+            switch (ch) {
+                case '/':
+                    writer.write('\\');
+                    writer.write('/');
+                    break;
+                case ':':
+                    writer.write('\\');
+                    writer.write(':');
+                    break;
+                case '-':
+                    writer.write('\\');
+                    writer.write('-');
+                    break;
+                default:
+                    writer.write(ch);
+                    break;
+            }
+        }
+
+        return writer.toString();
+    }
+
+    /**
+     * <pre>
+     * StringUtil.isEmpty(null)      = true
+     * StringUtil.isEmpty("")        = true
+     * StringUtil.isEmpty(" ")       = false
+     * StringUtil.isEmpty("bob")     = false
+     * StringUtil.isEmpty("  bob  ") = false
      * </pre>
      *
      * @param str the String to check, may be null
@@ -52,11 +88,11 @@ public class StringUtil {
 
     /**
      * <pre>
-     * StringUtils.isBlank(null)      = true
-     * StringUtils.isBlank("")        = true
-     * StringUtils.isBlank(" ")       = true
-     * StringUtils.isBlank("bob")     = false
-     * StringUtils.isBlank("  bob  ") = false
+     * StringUtil.isBlank(null)      = true
+     * StringUtil.isBlank("")        = true
+     * StringUtil.isBlank(" ")       = true
+     * StringUtil.isBlank("bob")     = false
+     * StringUtil.isBlank("  bob  ") = false
      * </pre>
      *
      * @param str the String to check, may be null
@@ -85,9 +121,9 @@ public class StringUtil {
 
     /**
      * <pre>
-     * StringUtils.defaultString(null)  = ""
-     * StringUtils.defaultString("")    = ""
-     * StringUtils.defaultString("bat") = "bat"
+     * StringUtil.defaultString(null)  = ""
+     * StringUtil.defaultString("")    = ""
+     * StringUtil.defaultString("bat") = "bat"
      * </pre>
      *
      * @param str the String to check, may be null
@@ -100,9 +136,9 @@ public class StringUtil {
 
     /**
      * <pre>
-     * StringUtils.defaultString(null, "NULL")  = "NULL"
-     * StringUtils.defaultString("", "NULL")    = ""
-     * StringUtils.defaultString("bat", "NULL") = "bat"
+     * StringUtil.defaultString(null, "NULL")  = "NULL"
+     * StringUtil.defaultString("", "NULL")    = ""
+     * StringUtil.defaultString("bat", "NULL") = "bat"
      * </pre>
      *
      * @param str        the String to check, may be null
