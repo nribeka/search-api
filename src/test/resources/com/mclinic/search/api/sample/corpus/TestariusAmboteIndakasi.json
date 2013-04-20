@@ -1,0 +1,83 @@
+{
+  "person": {
+    "dead": false,
+    "age": 47,
+    "preferredAddress": {
+      "links": [
+        {
+          "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dd55e586-1691-11df-97a5-7038c432aabf/address/ddcab008-1691-11df-97a5-7038c432aabf",
+          "rel": "self"
+        }
+      ],
+      "uuid": "ddcab008-1691-11df-97a5-7038c432aabf",
+      "display": "Example of Address"
+    },
+    "attributes": [
+      {
+        "links": [
+          {
+            "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dd55e586-1691-11df-97a5-7038c432aabf/attribute/de2f255a-1691-11df-97a5-7038c432aabf",
+            "rel": "self"
+          }
+        ],
+        "uuid": "de2f255a-1691-11df-97a5-7038c432aabf",
+        "display": "Mother's Name = Babyline"
+      }
+    ],
+    "resourceVersion": "1.8",
+    "links": [
+      {
+        "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/null",
+        "rel": "self"
+      },
+      {
+        "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/null?v=full",
+        "rel": "full"
+      }
+    ],
+    "preferredName": {
+      "links": [
+        {
+          "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dd55e586-1691-11df-97a5-7038c432aabf/name/de836cec-1691-11df-97a5-7038c432aabf",
+          "rel": "self"
+        }
+      ],
+      "uuid": "de836cec-1691-11df-97a5-7038c432aabf",
+      "display": "Testarius Ambote Indakasi"
+    },
+    "birthdate": "1965-09-18T00:00:00.000-0500",
+    "deathDate": null,
+    "birthdateEstimated": false,
+    "causeOfDeath": null,
+    "uuid": null,
+    "display": "Testarius Ambote Indakasi",
+    "gender": "M",
+    "voided": false
+  },
+  "identifiers": [
+    {
+      "links": [
+        {
+          "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dd55e586-1691-11df-97a5-7038c432aabf/identifier/dcea0c45-1691-11df-97a5-7038c432aabf",
+          "rel": "self"
+        }
+      ],
+      "uuid": "dcea0c45-1691-11df-97a5-7038c432aabf",
+      "display": "Old AMPATH Medical Record Number = 363MO-5"
+    }
+  ],
+  "resourceVersion": "1.8",
+  "links": [
+    {
+      "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dd55e586-1691-11df-97a5-7038c432aabf",
+      "rel": "self"
+    },
+    {
+      "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dd55e586-1691-11df-97a5-7038c432aabf?v=full",
+      "rel": "full"
+    }
+  ],
+  "uuid": "dd55e586-1691-11df-97a5-7038c432aabf",
+  "display": "363MO-5 - Testarius Ambote Indakasi",
+  "voided": false
+}

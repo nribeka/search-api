@@ -16,7 +16,9 @@
 
 package com.mclinic.search.api.sample.domain;
 
-public class Patient {
+import com.mclinic.search.api.model.object.BaseSearchable;
+
+public class Patient extends BaseSearchable {
 
     private String uuid;
 
@@ -26,7 +28,7 @@ public class Patient {
 
     private String gender;
 
-    private String json;
+    private String checksum;
 
     /**
      * Get the patient internal uuid
@@ -101,20 +103,22 @@ public class Patient {
     }
 
     /**
-     * Get the underlying json representation for the patient
+     * Get the checksum for the searchable object.
      *
-     * @return the json representation
+     * @return the searchable object's checksum.
      */
-    public String getJson() {
-        return json;
+    @Override
+    public String getChecksum() {
+        return checksum;
     }
 
     /**
-     * Set the underlying json representation for the patient
+     * Set the checksum for the searchable object.
      *
-     * @param json the json representation
+     * @param checksum the checksum for the searchable object.
      */
-    public void setJson(final String json) {
-        this.json = json;
+    @Override
+    public void setChecksum(final String checksum) {
+        this.checksum = checksum;
     }
 }

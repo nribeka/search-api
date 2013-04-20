@@ -16,79 +16,152 @@
 
 package com.mclinic.search.api.sample.domain;
 
+import com.mclinic.search.api.model.object.BaseSearchable;
 import com.mclinic.search.api.util.StringUtil;
 
 import java.util.Date;
 
-public class Observation {
+public class Observation extends BaseSearchable {
 
     private String uuid;
 
     private String patient;
 
-    private String valueText = StringUtil.EMPTY;
+    private String value = StringUtil.EMPTY;
 
-    private String fieldName;
+    private String question;
 
-    private String fieldUuid;
+    private String questionUuid;
 
-    private Date observationDate;
+    private Date observationDatetime;
 
-    private String json;
+    private String checksum;
 
+    /**
+     * Get the uuid for the observation.
+     *
+     * @return the uuid for the observation.
+     */
     public String getUuid() {
         return uuid;
     }
 
+    /**
+     * Set the uuid for the observation.
+     *
+     * @param uuid the uuid for the observation.
+     */
     public void setUuid(final String uuid) {
         this.uuid = uuid;
     }
 
+    /**
+     * Get the patient for the observation.
+     *
+     * @return the patient.
+     */
     public String getPatient() {
         return patient;
     }
 
+    /**
+     * Set the patient for the observation.
+     *
+     * @param patient the patient.
+     */
     public void setPatient(final String patient) {
         this.patient = patient;
     }
 
-    public String getValueText() {
-        return valueText;
+    /**
+     * Get the value of the observation.
+     *
+     * @return the value of the observation.
+     */
+    public String getValue() {
+        return value;
     }
 
-    public void setValueText(final String valueText) {
-        this.valueText = valueText;
+    /**
+     * Set the value of the observation.
+     *
+     * @param value the value of the observation.
+     */
+    public void setValue(final String value) {
+        this.value = value;
     }
 
-    public String getFieldName() {
-        return fieldName;
+    /**
+     * Get the question for the observation.
+     *
+     * @return the question for the observation.
+     */
+    public String getQuestion() {
+        return question;
     }
 
-    public void setFieldName(final String fieldName) {
-        this.fieldName = fieldName;
+    /**
+     * Set the question for the observation.
+     *
+     * @param question the question for the observation.
+     */
+    public void setQuestion(final String question) {
+        this.question = question;
     }
 
-    public String getFieldUuid() {
-        return fieldUuid;
+    /**
+     * Get the question uuid for the observation.
+     *
+     * @return the question uuid for the observation.
+     */
+    public String getQuestionUuid() {
+        return questionUuid;
     }
 
-    public void setFieldUuid(final String fieldUuid) {
-        this.fieldUuid = fieldUuid;
+    /**
+     * Set the question uuid for the observation.
+     *
+     * @param questionUuid the question uuid for the observation.
+     */
+    public void setQuestionUuid(final String questionUuid) {
+        this.questionUuid = questionUuid;
     }
 
-    public Date getObservationDate() {
-        return observationDate;
+    /**
+     * Get the datetime for the observation.
+     *
+     * @return the datetime for the observation.
+     */
+    public Date getObservationDatetime() {
+        return observationDatetime;
     }
 
-    public void setObservationDate(final Date observationDate) {
-        this.observationDate = observationDate;
+    /**
+     * Set the datetime for the observation.
+     *
+     * @param observationDatetime the datetime for the observation.
+     */
+    public void setObservationDatetime(final Date observationDatetime) {
+        this.observationDatetime = observationDatetime;
     }
 
-    public String getJson() {
-        return json;
+    /**
+     * Get the checksum for the searchable object.
+     *
+     * @return the searchable object's checksum.
+     */
+    @Override
+    public String getChecksum() {
+        return checksum;
     }
 
-    public void setJson(final String json) {
-        this.json = json;
+    /**
+     * Set the checksum for the searchable object.
+     *
+     * @param checksum the checksum for the searchable object.
+     */
+    @Override
+    public void setChecksum(final String checksum) {
+        this.checksum = checksum;
     }
 }

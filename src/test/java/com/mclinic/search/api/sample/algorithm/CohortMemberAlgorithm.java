@@ -17,10 +17,14 @@
 package com.mclinic.search.api.sample.algorithm;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.serialization.BaseAlgorithm;
 import com.mclinic.search.api.sample.domain.Patient;
-import com.mclinic.search.api.serialization.Algorithm;
+import com.mclinic.search.api.model.serialization.Algorithm;
 
-public class CohortMemberAlgorithm implements Algorithm {
+import java.io.IOException;
+
+public class CohortMemberAlgorithm extends BaseAlgorithm {
 
     /**
      * Implementation of this method will define how the patient will be serialized from the JSON representation.
@@ -29,7 +33,7 @@ public class CohortMemberAlgorithm implements Algorithm {
      * @return the concrete patient object
      */
     @Override
-    public Patient deserialize(final String serialized) {
+    public Searchable deserialize(final String serialized) throws IOException {
         Patient patient = new Patient();
 
         // get the full json object representation and then pass this around to the next JsonPath.read()
@@ -48,8 +52,6 @@ public class CohortMemberAlgorithm implements Algorithm {
         String gender = JsonPath.read(jsonObject, "$.patient.person.gender");
         patient.setGender(gender);
 
-        patient.setJson(serialized);
-
         return patient;
     }
 
@@ -60,8 +62,8 @@ public class CohortMemberAlgorithm implements Algorithm {
      * @return the json representation
      */
     @Override
-    public String serialize(final Object object) {
+    public String serialize(final Searchable object) throws IOException {
         Patient patient = (Patient) object;
-        return patient.getJson();
+        return patient.toString();
     }
 }

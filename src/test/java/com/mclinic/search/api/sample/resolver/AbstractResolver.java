@@ -16,12 +16,13 @@
 
 package com.mclinic.search.api.sample.resolver;
 
-import com.mclinic.search.api.resolver.Resolver;
-import com.mclinic.search.api.util.ResolverUtil;
+import com.mclinic.search.api.model.resolver.BaseResolver;
+import com.mclinic.search.api.model.resolver.Resolver;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 import java.net.URLConnection;
 
-public abstract class AbstractResolver implements Resolver {
+public abstract class AbstractResolver extends BaseResolver {
 
     protected final String WEB_SERVER = "http://localhost:8081/";
 
@@ -29,7 +30,7 @@ public abstract class AbstractResolver implements Resolver {
 
     @Override
     public URLConnection authenticate(final URLConnection connection) {
-        String basicAuth = ResolverUtil.getBasicAuth("admin", "test");
+        String basicAuth = Base64.encode("admin:est".getBytes());
         connection.setRequestProperty("Authorization", basicAuth);
         return connection;
     }

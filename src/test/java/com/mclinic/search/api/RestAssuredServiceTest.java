@@ -17,11 +17,13 @@
 package com.mclinic.search.api;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.module.JUnitModule;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.sample.algorithm.PatientAlgorithm;
 import com.mclinic.search.api.sample.domain.Patient;
 import com.mclinic.search.api.sample.resolver.PatientResolver;
+import com.mclinic.search.api.service.RestAssuredService;
 import com.mclinic.search.api.util.StreamUtil;
 import com.mclinic.search.api.util.StringUtil;
 import org.junit.After;
@@ -57,7 +59,7 @@ public class RestAssuredServiceTest {
         String patientUuidPath = "$.uuid";
         String patientNamePath = "$.person.display";
 
-        URL corpusUri = RestAssuredService.class.getResource(CORPUS_DIRECTORY);
+        URL corpusUri = RestAssuredServiceTest.class.getResource(CORPUS_DIRECTORY);
         File corpusDirectory = new File(corpusUri.getPath());
         for (String corpusFile : corpusDirectory.list()) {
             String jsonPayload = StreamUtil.readAsString(new FileReader(new File(corpusDirectory, corpusFile)));
@@ -75,14 +77,11 @@ public class RestAssuredServiceTest {
         // initialize context object with additional parameters from the junit module
         Context.initialize(new JUnitModule());
 
-        // register algorithms classes for the testing
-        Context.registerAlgorithm(PatientAlgorithm.class);
-        // register resolver classes for the testing
-        Context.registerResolver(PatientResolver.class);
-        // register domain object classes for the testing
-        Context.registerObject(Patient.class);
+        Context.registerObject(new Patient());
+        Context.registerResolver(new PatientResolver());
+        Context.registerAlgorithm(new PatientAlgorithm());
 
-        URL configurationUri = RestAssuredService.class.getResource(CORPUS_CONFIGURATION_FILE);
+        URL configurationUri = RestAssuredServiceTest.class.getResource(CORPUS_CONFIGURATION_FILE);
         Context.registerResources(new File(configurationUri.getPath()));
 
         Resource resource = Context.getResource(PATIENT_RESOURCE);
@@ -92,7 +91,7 @@ public class RestAssuredServiceTest {
         Assert.assertNotNull(service);
 
         // read the corpus location
-        URL corpus = RestAssuredService.class.getResource(CORPUS_DIRECTORY);
+        URL corpus = RestAssuredServiceTest.class.getResource(CORPUS_DIRECTORY);
 
         // load and save the corpus information into lucene database
         service.loadObjects(StringUtil.EMPTY, resource, new File(corpus.getPath()));
@@ -156,7 +155,7 @@ public class RestAssuredServiceTest {
         // search for multiple patients
         List<Patient> patients = service.getObjects("name:Test*", Patient.class);
         Assert.assertNotNull(patients);
-        Assert.assertTrue(patients.size() > 0);
+        Assert.assertEquals(3, patients.size());
         // search for specific patient using the name
         Patient patient = service.getObject("name: " + StringUtil.quote(patientName), Patient.class);
         Assert.assertNotNull(patient);
@@ -260,7 +259,7 @@ public class RestAssuredServiceTest {
     @Test
     public void getObjects_shouldReturnAllObjectMatchingTheSearchSearchStringAndResource() throws Exception {
         Resource resource = Context.getResource(PATIENT_RESOURCE);
-        List<Object> patients = service.getObjects("name: T*", resource);
+        List<Searchable> patients = service.getObjects("name: T*", resource);
         Assert.assertNotNull(patients);
         Assert.assertTrue(patients.size() > 0);
         for (Object patient : patients) {
@@ -276,14 +275,14 @@ public class RestAssuredServiceTest {
     @Test
     public void getObjects_shouldReturnEmptyListWhenNoObjectMatchTheSearchStringAndResource() throws Exception {
         Resource resource = Context.getResource(PATIENT_RESOURCE);
-        List<Object> patients = service.getObjects("name: Zz*", resource);
+        List<Searchable> patients = service.getObjects("name: Zz*", resource);
         Assert.assertNotNull(patients);
         Assert.assertTrue(patients.size() == 0);
     }
 
     /**
      * @verifies remove an object from the internal index system
-     * @see RestAssuredService#invalidate(Object, com.mclinic.search.api.resource.Resource)
+     * @see RestAssuredService#invalidate(com.mclinic.search.api.model.object.Searchable, com.mclinic.search.api.resource.Resource)
      */
     @Test
     public void invalidate_shouldRemoveAnObjectFromTheInternalIndexSystem() throws Exception {

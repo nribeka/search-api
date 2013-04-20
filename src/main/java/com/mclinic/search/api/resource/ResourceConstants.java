@@ -23,7 +23,7 @@ public class ResourceConstants {
 
     public static final String RESOURCE_NAME = "resource.name";
 
-    public static final String RESOURCE_OBJECT = "resource.object";
+    public static final String RESOURCE_SEARCHABLE = "resource.object";
 
     public static final String RESOURCE_ROOT_NODE = "node.root";
 
@@ -33,9 +33,9 @@ public class ResourceConstants {
 
     public static final String RESOURCE_URI_RESOLVER_CLASS = "resolver.class";
 
-    public static final List<String> NON_SEARCHABLE_FIELDS = Arrays.asList(RESOURCE_NAME, RESOURCE_OBJECT,
+    public static final List<String> NON_SEARCHABLE_FIELDS = Arrays.asList(RESOURCE_NAME, RESOURCE_SEARCHABLE,
             RESOURCE_ROOT_NODE, RESOURCE_UNIQUE_FIELD, RESOURCE_ALGORITHM_CLASS, RESOURCE_URI_RESOLVER_CLASS);
 
-    public static final List<String> MANDATORY_FIELDS = Arrays.asList(RESOURCE_NAME, RESOURCE_OBJECT,
+    public static final List<String> MANDATORY_FIELDS = Arrays.asList(RESOURCE_NAME, RESOURCE_SEARCHABLE,
             RESOURCE_ROOT_NODE, RESOURCE_ALGORITHM_CLASS, RESOURCE_URI_RESOLVER_CLASS);
 }

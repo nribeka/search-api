@@ -16,33 +16,30 @@
 
 package com.mclinic.search.api.internal.lucene;
 
+import com.mclinic.search.api.Loggable;
+import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.resource.Resource;
 import org.apache.lucene.queryParser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-public interface Indexer {
+public interface Indexer extends Loggable {
 
     void loadObjects(final Resource resource, final InputStream inputStream) throws ParseException, IOException;
 
-    void loadObjects(final Resource resource, final Reader reader) throws ParseException, IOException;
-
     <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException;
 
-    Object getObject(final String key, final Resource resource) throws ParseException, IOException;
+    Searchable getObject(final String key, final Resource resource) throws ParseException, IOException;
 
     <T> List<T> getObjects(final String searchString, final Class<T> clazz) throws ParseException, IOException;
 
-    List<Object> getObjects(final String searchString, final Resource resource) throws ParseException, IOException;
+    List<Searchable> getObjects(final String searchString, final Resource resource) throws ParseException, IOException;
 
-    Object createObject(final Object object, final Resource resource) throws ParseException, IOException;
-
-    Object deleteObject(final Object object, final Resource resource) throws ParseException, IOException;
-
-    Object updateObject(final Object object, final Resource resource) throws ParseException, IOException;
+    Searchable deleteObject(final Searchable object, final Resource resource) throws ParseException, IOException;
 
     void commit() throws IOException;
 }

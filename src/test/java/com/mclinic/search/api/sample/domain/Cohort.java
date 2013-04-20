@@ -16,35 +16,69 @@
 
 package com.mclinic.search.api.sample.domain;
 
-public class Cohort {
+import com.mclinic.search.api.model.object.BaseSearchable;
+
+public class Cohort extends BaseSearchable {
 
     private String uuid;
 
     private String name;
 
-    private String json;
+    private String checksum;
 
+    /**
+     * Get the cohort uuid.
+     *
+     * @return the cohort uuid.
+     */
     public String getUuid() {
         return uuid;
     }
 
+    /**
+     * Set the cohort uuid.
+     *
+     * @param uuid the cohort uuid.
+     */
     public void setUuid(final String uuid) {
         this.uuid = uuid;
     }
 
+    /**
+     * Get the cohort name.
+     *
+     * @return the cohort name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the cohort name.
+     *
+     * @param name the cohort name.
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    public String getJson() {
-        return json;
+    /**
+     * Get the checksum for the searchable object.
+     *
+     * @return the searchable object's checksum.
+     */
+    @Override
+    public String getChecksum() {
+        return checksum;
     }
 
-    public void setJson(final String json) {
-        this.json = json;
+    /**
+     * Set the checksum for the searchable object.
+     *
+     * @param checksum the checksum for the searchable object.
+     */
+    @Override
+    public void setChecksum(final String checksum) {
+        this.checksum = checksum;
     }
 }

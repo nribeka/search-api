@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-package com.mclinic.search.api.resolver;
+package com.mclinic.search.api.model.resolver;
+
+import com.mclinic.search.api.Loggable;
 
 import java.net.URLConnection;
 
-public interface Resolver {
+public interface Resolver extends Loggable {
 
     /**
      * Return the full REST resource based on the search string passed to the method.
      *
-     * @param searchString the search string
-     * @return full URI to the REST resource
+     * @param searchString the search string.
+     * @return full uri to the REST resource.
      */
     String resolve(final String searchString);
 
+    /**
+     * Add authentication information to the url connection.
+     *
+     * @param connection the original connection without authentication information.
+     * @return the url connection with authentication information.
+     */
     URLConnection authenticate(final URLConnection connection);
 }

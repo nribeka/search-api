@@ -16,6 +16,7 @@
 
 package com.mclinic.search.api.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,21 +34,27 @@ public class DigestUtil {
             (byte) 'c', (byte) 'd', (byte) 'e', (byte) 'f'
     };
 
-    private static byte[] createChecksum(final File file) throws NoSuchAlgorithmException, IOException {
-        MessageDigest digest = MessageDigest.getInstance("SHA1");
+    private static MessageDigest getDigest(final String defaultAlgorithm) throws IOException {
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(defaultAlgorithm);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException("Unable to find that algorithm for the message digest!", e);
+        }
+        return digest;
+    }
 
-        InputStream inputStream = null;
+    private static byte[] createChecksum(final InputStream inputStream) throws IOException {
+        MessageDigest digest = getDigest("SHA1");
         try {
             int count;
             byte[] buffer = new byte[1024];
-            inputStream = new FileInputStream(file);
             while ((count = inputStream.read(buffer)) != -1)
                 digest.update(buffer, 0, count);
         } finally {
             if (inputStream != null)
                 inputStream.close();
         }
-
         return digest.digest();
     }
 
@@ -63,11 +70,13 @@ public class DigestUtil {
         return new String(hex, "ASCII");
     }
 
-    public static String getSHA1Checksum(final String filename) throws NoSuchAlgorithmException, IOException {
-        return getSHA1Checksum(new File(filename));
+    public static String getSHA1Checksum(final String data)  throws IOException {
+        InputStream inputStream = new ByteArrayInputStream(data.getBytes());
+        return getHexString(createChecksum(inputStream));
     }
 
-    public static String getSHA1Checksum(final File file) throws NoSuchAlgorithmException, IOException {
-        return getHexString(createChecksum(file));
+    public static String getSHA1Checksum(final File file) throws IOException {
+        InputStream inputStream = new FileInputStream(file);
+        return getHexString(createChecksum(inputStream));
     }
 }

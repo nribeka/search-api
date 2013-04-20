@@ -16,34 +16,16 @@
 
 package com.mclinic.search.api.service;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.mclinic.search.api.RestAssuredService;
-import com.mclinic.search.api.internal.lucene.Indexer;
-import com.mclinic.search.api.resolver.Resolver;
+import com.mclinic.search.api.Loggable;
+import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.resource.Resource;
-import com.mclinic.search.api.util.FilenameUtil;
 import org.apache.lucene.queryParser.ParseException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 
-public class RestAssuredServiceImpl implements RestAssuredService {
-
-    private final Indexer indexer;
-
-    @Inject
-    @Named("connection.timeout")
-    private int timeout;
-
-    @Inject
-    protected RestAssuredServiceImpl(final Indexer indexer) {
-        this.indexer = indexer;
-    }
+public interface RestAssuredService extends Loggable {
 
     /**
      * Load object described using the <code>resource</code> into local lucene repository. This method will use the URI
@@ -59,25 +41,10 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      *
      * @param searchString the string to filter object that from the REST resource.
      * @param resource     the resource object which will describe how to index the json resource to lucene.
+     * @should load objects based on the resource description
      */
-    @Override
-    public void loadObjects(final String searchString, final Resource resource) throws ParseException, IOException {
-
-        Resolver resolver = resource.getResolver();
-
-        URL url = new URL(resolver.resolve(searchString));
-        URLConnection connection = url.openConnection();
-        connection.setConnectTimeout(timeout);
-        connection = resolver.authenticate(connection);
-        // TODO: need to handle paging
-        // - one of the solution probably merging this loadObject into:
-        //   - loadObject(final Resource resource, final String payload)
-        //   - this method then will read the response from the server
-        //   - delegate the paging handling to the subclass (if applicable).
-        // - short term solution: increase the page size
-        indexer.loadObjects(resource, connection.getInputStream());
-        indexer.commit();
-    }
+    void loadObjects(final String searchString, final Resource resource)
+            throws ParseException, IOException;
 
     /**
      * Load object described using the <code>resource</code> into local lucene repository. This method will load locally
@@ -87,36 +54,11 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @param searchString the search string to filter object returned from the file.
      * @param resource     the resource object which will describe how to index the json resource to lucene.
      * @param file         the file in the filesystem where the json resource is saved.
-     * @see com.mclinic.search.api.RestAssuredService#loadObjects(String, com.mclinic.search.api.resource.Resource)
+     * @should load object from filesystem based on the resource description
+     * @see RestAssuredService#loadObjects(String, com.mclinic.search.api.resource.Resource)
      */
-    @Override
-    public void loadObjects(final String searchString, final Resource resource, final File file)
-            throws ParseException, IOException {
-        loadObjects(searchString, resource, file, true);
-    }
-
-    private void loadObjects(final String searchString, final Resource resource, final File file,
-                             final boolean commit) throws ParseException, IOException {
-        if (!file.isDirectory() && FilenameUtil.contains(file.getName(), searchString)) {
-            FileInputStream stream = null;
-            try {
-                stream = new FileInputStream(file);
-                indexer.loadObjects(resource, stream);
-            } finally {
-                if (stream != null)
-                    stream.close();
-            }
-        } else {
-            File[] files = file.listFiles();
-            if (files != null) {
-                for (File jsonFile : files)
-                    loadObjects(searchString, resource, jsonFile, false);
-            }
-        }
-
-        if (commit)
-            indexer.commit();
-    }
+    void loadObjects(final String searchString, final Resource resource, final File file)
+            throws ParseException, IOException;
 
     /**
      * Search for an object with matching <code>key</code> and <code>clazz</code> type from the local repository. This
@@ -130,11 +72,11 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @param key   the key to distinguish the object
      * @param clazz the expected return type of the object
      * @return object with matching key and clazz or null
+     * @should return object with matching key and type
+     * @should return null when no object match the key and type
+     * @should throw IOException if the key and class unable to return unique object
      */
-    @Override
-    public <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException {
-        return indexer.getObject(key, clazz);
-    }
+    <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException;
 
     /**
      * Search for an object with matching <code>key</code> and <code>clazz</code> type from the local repository. This
@@ -147,24 +89,23 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @param key      the key to distinguish the object
      * @param resource the resource object which will describe how to index the json resource to lucene.
      * @return object with matching key and clazz or null
+     * @should return object with matching key
+     * @should return null when no object match the key
+     * @should throw IOException if the key and resource unable to return unique object
      */
-    @Override
-    public Object getObject(final String key, final Resource resource) throws ParseException, IOException {
-        return indexer.getObject(key, resource);
-    }
+    Searchable getObject(final String key, final Resource resource) throws ParseException, IOException;
 
     /**
      * Search for objects with matching <code>searchString</code> and <code>clazz</code> type from the local repository.
      * This method will return list of all matching object or empty list if no object match the search string.
      *
-     * @param clazz        the expected return type of the object
      * @param searchString the search string to limit the number of returned object
+     * @param clazz        the expected return type of the object
      * @return list of all object with matching <code>searchString</code> and <code>clazz</code> or empty list
+     * @should return all object matching the search search string and class
+     * @should return empty list when no object match the search string and class
      */
-    @Override
-    public <T> List<T> getObjects(final String searchString, final Class<T> clazz) throws ParseException, IOException {
-        return indexer.getObjects(searchString, clazz);
-    }
+    <T> List<T> getObjects(final String searchString, final Class<T> clazz) throws ParseException, IOException;
 
     /**
      * Search for objects with matching <code>searchString</code> and <code>resource</code> type from the local
@@ -174,12 +115,10 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @param searchString the search string to limit the number of returned object
      * @param resource     the resource descriptor used to register the object
      * @return list of all object with matching <code>searchString</code> and <code>resource</code> or empty list
+     * @should return all object matching the search search string and resource
+     * @should return empty list when no object match the search string and resource
      */
-    @Override
-    public List<Object> getObjects(final String searchString, final Resource resource)
-            throws ParseException, IOException {
-        return indexer.getObjects(searchString, resource);
-    }
+    List<Searchable> getObjects(final String searchString, final Resource resource) throws ParseException, IOException;
 
     /**
      * Remove an object based on the resource from the local repository. The method will determine if there's unique
@@ -193,40 +132,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @param object   the object to be removed if the object exists.
      * @param resource the resource object which will describe how to index the json resource to lucene.
      * @return removed object or null if no object was removed.
+     * @should remove an object from the internal index system
      */
-    @Override
-    public Object invalidate(final Object object, final Resource resource) throws ParseException, IOException {
-        return indexer.deleteObject(object, resource);
-    }
-
-    /**
-     * Create an instance of object in the local repository.
-     * <p/>
-     * Internally, this method will serialize the object and using the resource configuration to create an entry in
-     * the lucene local repository.
-     *
-     * @param object   the object to be created
-     * @param resource the resource object which will describe how to index the json resource to lucene.
-     * @return the object that was created
-     */
-    @Override
-    public Object createObject(final Object object, final Resource resource) throws ParseException, IOException {
-        return indexer.createObject(object, resource);
-    }
-
-    /**
-     * Update an instance of object in the local repository.
-     * <p/>
-     * Internally, this method will perform invalidation of the object and then recreate the object in the local lucene
-     * repository. If the changes are performed on the unique searchable field, this method will end up creating a new
-     * entry in the lucene local repository.
-     *
-     * @param object   the object to be updated
-     * @param resource the resource object which will describe how to index the json resource to lucene.
-     * @return the object that was updated
-     */
-    @Override
-    public Object updateObject(final Object object, final Resource resource) throws ParseException, IOException {
-        return indexer.updateObject(object, resource);
-    }
+    Searchable invalidate(final Searchable object, final Resource resource) throws ParseException, IOException;
 }
