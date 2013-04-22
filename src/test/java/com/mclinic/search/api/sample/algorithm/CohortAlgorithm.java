@@ -17,10 +17,15 @@
 package com.mclinic.search.api.sample.algorithm;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mclinic.search.api.Loggable;
+import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.serialization.BaseAlgorithm;
 import com.mclinic.search.api.sample.domain.Cohort;
-import com.mclinic.search.api.serialization.Algorithm;
+import com.mclinic.search.api.model.serialization.Algorithm;
 
-public class CohortAlgorithm implements Algorithm {
+import java.io.IOException;
+
+public class CohortAlgorithm extends BaseAlgorithm {
 
     /**
      * Implementation of this method will define how the object will be serialized from the String representation.
@@ -29,7 +34,7 @@ public class CohortAlgorithm implements Algorithm {
      * @return the concrete object
      */
     @Override
-    public Object deserialize(final String serialized) {
+    public Searchable deserialize(final String serialized) throws IOException {
         Cohort cohort = new Cohort();
         // TODO: remember that performing JsonPath.read() followed by toString() might get us into NPE
         Object jsonObject = JsonPath.read(serialized, "$");
@@ -37,9 +42,6 @@ public class CohortAlgorithm implements Algorithm {
         cohort.setUuid(uuid);
         String name = JsonPath.read(jsonObject, "$.display");
         cohort.setName(name);
-
-        cohort.setJson(serialized);
-
         return cohort;
     }
 
@@ -50,8 +52,8 @@ public class CohortAlgorithm implements Algorithm {
      * @return the string representation
      */
     @Override
-    public String serialize(final Object object) {
+    public String serialize(final Searchable object) throws IOException {
         Cohort cohort = (Cohort) object;
-        return cohort.getJson();
+        return cohort.toString();
     }
 }

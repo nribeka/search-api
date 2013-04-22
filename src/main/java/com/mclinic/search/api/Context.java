@@ -20,11 +20,14 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-import com.mclinic.search.api.module.FactoryModule;
+import com.mclinic.search.api.context.ServiceContext;
+import com.mclinic.search.api.exception.ServiceException;
 import com.mclinic.search.api.module.SearchModule;
-import com.mclinic.search.api.resolver.Resolver;
+import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.Resource;
-import com.mclinic.search.api.serialization.Algorithm;
+import com.mclinic.search.api.model.serialization.Algorithm;
+import com.mclinic.search.api.service.RestAssuredService;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,15 +37,12 @@ public class Context {
 
     private static Injector injector;
 
-    private static ServiceContext serviceContext;
-
-    private static ServiceContext getServiceContext() {
-        return serviceContext;
+    public static void initialize(final Module... modules) {
+        injector = Guice.createInjector(new SearchModule(), Modules.combine(modules));
     }
 
-    public static void initialize(final Module... modules) {
-        injector = Guice.createInjector(new SearchModule(), new FactoryModule(), Modules.combine(modules));
-        serviceContext = injector.getInstance(ServiceContext.class);
+    private static ServiceContext getServiceContext() {
+        return injector.getInstance(ServiceContext.class);
     }
 
     /**
@@ -58,21 +58,22 @@ public class Context {
     }
 
     /**
-     * Get the service layer for the search api. The service layer is the layer where consumer can perform load and
-     * searches.
+     * Get the service layer for the search api. The service layer is the layer where consumer can perform load, get and
+     * search.
      *
      * @return the service layer.
      */
     public static RestAssuredService getService() {
-        return getServiceContext().getRestAssuredService();
+        return getServiceContext().getService();
     }
 
     /**
      * Register a new resource object for future use.
      *
      * @param resource the resource to be registered.
-     * @should register programmatically created resource object.
+     * @should register the resource object.
      * @should not register resource without resource name.
+     * @should not register null object.
      */
     public static void registerResource(final Resource resource) {
         getServiceContext().registerResource(resource);
@@ -83,7 +84,7 @@ public class Context {
      *
      * @param file the file (could be a directory too).
      * @throws IOException when the parser fail to read the configuration file.
-     * @shoud recursively register all resources inside directory.
+     * @should recursively register all resources inside directory.
      * @should only register resource files with j2l extension.
      * @should create valid resource object based on the resource file.
      */
@@ -124,60 +125,68 @@ public class Context {
     }
 
     /**
-     * Register all domain object classes.
+     * Register domain object which can be used to create a new resource object.
      *
-     * @param classes the domain object classes.
-     * @should register all domain object classes in the domain object registry.
+     * @param searchable the domain object.
+     * @should register domain object using the class name.
      */
-    public static void registerObjects(final Collection<Class<?>> classes) {
-        getServiceContext().registerObjects(classes);
+    public static void registerObject(final Searchable searchable) throws ServiceException {
+        getServiceContext().registerObject(searchable);
     }
 
-    public static void registerObject(final Class<?> clazz) {
-        getServiceContext().registerObject(clazz);
+    public static Searchable getObject(final String name) {
+        return getServiceContext().getObject(name);
     }
 
-    public static Class<?> removeObject(final Class<?> clazz) {
-        return getServiceContext().removeObject(clazz);
+    public static Searchable removeObject(final Searchable searchable) {
+        return getServiceContext().removeObject(searchable);
     }
 
-    public boolean containsObject(final Class<?> clazz) {
-        return getServiceContext().containsObject(clazz);
+    public boolean containsObject(final Searchable searchable) {
+        return getServiceContext().containsObject(searchable);
     }
 
     /**
-     * Register all algorithm classes.
+     * Register algorithm which can be used to create a new resource object.
      *
-     * @param algorithms the algorithm classes.
-     * @should register all algorithm classes in the algorithm registry.
+     * @param algorithm the algorithm.
+     * @should register algorithm using the class name.
      */
-    public static void registerAlgorithms(final Collection<Class<? extends Algorithm>> algorithms) {
-        getServiceContext().registerAlgorithms(algorithms);
-    }
-
-    public static void registerAlgorithm(final Class<? extends Algorithm> algorithm) {
+    public static void registerAlgorithm(final Algorithm algorithm) throws ServiceException {
         getServiceContext().registerAlgorithm(algorithm);
     }
 
-    public static Class<? extends Algorithm> getAlgorithm(final Class<? extends Algorithm> algorithm) {
-        return getServiceContext().getAlgorithm(algorithm);
+    public static Algorithm getAlgorithm(final String name) {
+        return getServiceContext().getAlgorithm(name);
+    }
+
+    public static Algorithm removeAlgorithm(final Algorithm algorithm) {
+        return getServiceContext().removeAlgorithm(algorithm);
+    }
+
+    public boolean containsAlgorithm(final Algorithm algorithm) {
+        return getServiceContext().containsAlgorithm(algorithm);
     }
 
     /**
-     * Register all resolver classes
+     * Register resolver which can be used to create a new resource object.
      *
-     * @param resolvers the resolver classes
-     * @should register all resolver classes in the resolve registry.
+     * @param resolver the resolver
+     * @should register resolver using the class name.
      */
-    public static void registerResolvers(final Collection<Class<? extends Resolver>> resolvers) {
-        getServiceContext().registerResolvers(resolvers);
-    }
-
-    public static void registerResolver(final Class<? extends Resolver> resolver) {
+    public static void registerResolver(final Resolver resolver) throws ServiceException {
         getServiceContext().registerResolver(resolver);
     }
 
-    public static Class<? extends Resolver> getResolver(final Class<? extends Resolver> resolver) {
-        return getServiceContext().getResolver(resolver);
+    public static Resolver getResolver(final String name) {
+        return getServiceContext().getResolver(name);
+    }
+
+    public static Resolver removeResolver(final Resolver resolver) {
+        return getServiceContext().removeResolver(resolver);
+    }
+
+    public boolean containsResolver(final Resolver resolver) {
+        return getServiceContext().containsResolver(resolver);
     }
 }

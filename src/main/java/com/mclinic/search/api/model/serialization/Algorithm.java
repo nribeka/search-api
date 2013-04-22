@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package com.mclinic.search.api.serialization;
+package com.mclinic.search.api.model.serialization;
+
+import com.mclinic.search.api.Loggable;
+import com.mclinic.search.api.model.object.Searchable;
+
+import java.io.IOException;
 
 /**
  * Base interface to serialize and de-serialize String into the correct object representation.
  */
-public interface Algorithm {
+public interface Algorithm extends Loggable {
 
     /**
      * Implementation of this method will define how the object will be serialized from the String representation.
@@ -27,7 +32,7 @@ public interface Algorithm {
      * @param serialized the string representation
      * @return the concrete object
      */
-    Object deserialize(final String serialized);
+    Searchable deserialize(final String serialized) throws IOException;
 
     /**
      * Implementation of this method will define how the object will be de-serialized into the String representation.
@@ -35,5 +40,5 @@ public interface Algorithm {
      * @param object the object
      * @return the string representation
      */
-    String serialize(final Object object);
+    String serialize(final Searchable object) throws IOException;
 }

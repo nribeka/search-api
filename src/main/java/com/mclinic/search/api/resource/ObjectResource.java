@@ -16,9 +16,11 @@
 
 package com.mclinic.search.api.resource;
 
-import com.mclinic.search.api.resolver.Resolver;
-import com.mclinic.search.api.serialization.Algorithm;
+import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.resolver.Resolver;
+import com.mclinic.search.api.model.serialization.Algorithm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -172,8 +174,7 @@ public class ObjectResource implements Resource {
     /**
      * Add a new searchable field for the current resource object. Searchable field is a field on which a client can
      * do filter and search. The search / query string will in the form of <a href="https://lucene.apache
-     * .org/">Lucene</a>
-     * query.
+     * .org/">Lucene</a> query.
      *
      * @param name       the name of the field
      * @param expression the JsonPath expression to retrieve the value for the field
@@ -190,8 +191,7 @@ public class ObjectResource implements Resource {
     /**
      * Get all searchable fields configuration for this resource. Searchable field are a field on which a client can
      * do filter and search. The search / query string will in the form of <a href="https://lucene.apache
-     * .org/">Lucene</a>
-     * query.
+     * .org/">Lucene</a> query.
      *
      * @return the list of all searchable fields for this resource
      * @see <a href="https://lucene.apache.org/core/old_versioned_docs/versions/3_0_0/queryparsersyntax.html">Query
@@ -204,14 +204,13 @@ public class ObjectResource implements Resource {
 
     /**
      * Perform serialization for the object and returning the String representation of the object. Default
-     * implementation
-     * of this should delegate the serialization to the <code>Algorithm</code> object.
+     * implementation of this should delegate the serialization to the <code>Algorithm</code> object.
      *
      * @param object the object
      * @return String representation of the object
      */
     @Override
-    public String serialize(final Object object) {
+    public String serialize(final Searchable object) throws IOException {
         return getAlgorithm().serialize(object);
     }
 
@@ -223,7 +222,7 @@ public class ObjectResource implements Resource {
      * @return the concrete object based on the String input
      */
     @Override
-    public Object deserialize(final String string) {
+    public Searchable deserialize(final String string) throws IOException {
         return getAlgorithm().deserialize(string);
     }
 

@@ -17,14 +17,17 @@
 package com.mclinic.search.api.sample.algorithm;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.serialization.BaseAlgorithm;
 import com.mclinic.search.api.sample.domain.Observation;
-import com.mclinic.search.api.serialization.Algorithm;
+import com.mclinic.search.api.model.serialization.Algorithm;
 import com.mclinic.search.api.util.ISO8601Util;
 import net.minidev.json.JSONObject;
 
+import java.io.IOException;
 import java.text.ParseException;
 
-public class ObservationAlgorithm implements Algorithm {
+public class ObservationAlgorithm extends BaseAlgorithm {
 
     /**
      * Implementation of this method will define how the object will be serialized from the String representation.
@@ -33,7 +36,7 @@ public class ObservationAlgorithm implements Algorithm {
      * @return the concrete object
      */
     @Override
-    public Object deserialize(final String serialized) {
+    public Searchable deserialize(final String serialized) throws IOException {
         Observation observation = new Observation();
 
         // get the full json object representation and then pass this around to the next JsonPath.read()
@@ -47,25 +50,23 @@ public class ObservationAlgorithm implements Algorithm {
         observation.setPatient(patient);
 
         String conceptName = JsonPath.read(jsonObject, "$.concept.display");
-        observation.setFieldName(conceptName);
+        observation.setQuestion(conceptName);
 
         String conceptUuid = JsonPath.read(jsonObject, "$.concept.uuid");
-        observation.setFieldUuid(conceptUuid);
+        observation.setQuestionUuid(conceptUuid);
 
         Object jsonValue = JsonPath.read(jsonObject, "$.value");
         String value = jsonValue.toString();
         if (jsonValue instanceof JSONObject)
             value = JsonPath.read(jsonValue, "$.name.display");
-        observation.setValueText(value);
+        observation.setValue(value);
 
         String obsDatetime = JsonPath.read(jsonObject, "$.obsDatetime");
         try {
-            observation.setObservationDate(ISO8601Util.toCalendar(obsDatetime).getTime());
+            observation.setObservationDatetime(ISO8601Util.toCalendar(obsDatetime).getTime());
         } catch (ParseException e) {
-            // suppress the exception
+            getLogger().info(this.getClass().getSimpleName(), "Unable to parse date and time value!");
         }
-
-        observation.setJson(serialized);
 
         return observation;
     }
@@ -77,8 +78,8 @@ public class ObservationAlgorithm implements Algorithm {
      * @return the string representation
      */
     @Override
-    public String serialize(final Object object) {
+    public String serialize(final Searchable object) throws IOException {
         Observation observation = (Observation) object;
-        return observation.getJson();
+        return observation.toString();
     }
 }

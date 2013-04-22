@@ -31,15 +31,15 @@ public class StreamUtil {
      */
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
 
-    public static String readAsString(final Reader input) throws IOException {
+    public static String readAsString(final Reader reader) throws IOException {
 
         char[] buffer = new char[DEFAULT_BUFFER_SIZE];
 
         StringWriter writer = new StringWriter();
-        BufferedReader reader = new BufferedReader(input);
+        BufferedReader bufferedReader = new BufferedReader(reader);
 
         int count;
-        while ((count = reader.read(buffer)) != -1)
+        while ((count = bufferedReader.read(buffer)) != -1)
             writer.write(buffer, 0, count);
         return writer.toString();
     }

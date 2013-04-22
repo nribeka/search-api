@@ -16,9 +16,11 @@
 
 package com.mclinic.search.api.resource;
 
-import com.mclinic.search.api.resolver.Resolver;
-import com.mclinic.search.api.serialization.Algorithm;
+import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.resolver.Resolver;
+import com.mclinic.search.api.model.serialization.Algorithm;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -143,8 +145,7 @@ public interface Resource {
     /**
      * Add a new searchable field for the current resource object. Searchable field is a field on which a client can
      * do filter and search. The search / query string will in the form of <a href="https://lucene.apache
-     * .org/">Lucene</a>
-     * query.
+     * .org/">Lucene</a> query.
      *
      * @param name       the name of the field
      * @param expression the JsonPath expression to retrieve the value for the field
@@ -153,13 +154,12 @@ public interface Resource {
      *      Syntax</a>
      * @see <a href="http://goessner.net/articles/JsonPath/">JsonPath Operators</a>
      */
-    void addFieldDefinition(String name, String expression, Boolean unique);
+    void addFieldDefinition(final String name, final String expression, final Boolean unique);
 
     /**
      * Get all searchable fields configuration for this resource. Searchable field are a field on which a client can
      * do filter and search. The search / query string will in the form of <a href="https://lucene.apache
-     * .org/">Lucene</a>
-     * query.
+     * .org/">Lucene</a> query.
      *
      * @return the list of all searchable fields for this resource
      * @see <a href="https://lucene.apache.org/core/old_versioned_docs/versions/3_0_0/queryparsersyntax.html">Query
@@ -169,13 +169,12 @@ public interface Resource {
 
     /**
      * Perform serialization for the object and returning the String representation of the object. Default
-     * implementation
-     * of this should delegate the serialization to the <code>Algorithm</code> object.
+     * implementation of this should delegate the serialization to the <code>Algorithm</code> object.
      *
      * @param object the object
      * @return String representation of the object
      */
-    String serialize(Object object);
+    String serialize(final Searchable object) throws IOException;
 
     /**
      * Perform de-serialization of the object's String representation into the concrete object representation. Default
@@ -184,7 +183,7 @@ public interface Resource {
      * @param string the String representation of the object
      * @return the concrete object based on the String input
      */
-    Object deserialize(String string);
+    Searchable deserialize(final String string) throws IOException;
 
     /**
      * Get the URI for the resource where the api can retrieve data. Default implementation should delegate this call to
@@ -193,5 +192,5 @@ public interface Resource {
      * @param searchString the search term for the REST URI
      * @return the full REST URI with the search string
      */
-    String getUri(String searchString);
+    String getUri(final String searchString);
 }

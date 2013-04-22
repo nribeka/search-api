@@ -7,8 +7,5 @@ resolver.class=com.mclinic.search.api.sample.resolver.PatientResolver
 field.unique=uuid
 # Mapping
 uuid=$.uuid
-identifier=$.identifiers[0].identifier
+identifier=$.identifiers[0].display
 name=$.person.display
-age=$.person.age
-gender=$.person.gender
-birthdate=$.person.birthdate
