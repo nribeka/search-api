@@ -234,7 +234,7 @@ public class ObjectResource implements Resource {
      * @return the full REST URI with the search string
      */
     @Override
-    public String getUri(final String searchString) {
+    public String getUri(final String searchString) throws IOException {
         return getResolver().resolve(searchString);
     }
 }

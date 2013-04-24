@@ -192,5 +192,5 @@ public interface Resource {
      * @param searchString the search term for the REST URI
      * @return the full REST URI with the search string
      */
-    String getUri(final String searchString);
+    String getUri(final String searchString) throws IOException;
 }

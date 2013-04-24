@@ -41,5 +41,9 @@ public interface Indexer extends Loggable {
 
     Searchable deleteObject(final Searchable object, final Resource resource) throws ParseException, IOException;
 
+    Searchable createObject(Searchable object, Resource resource) throws ParseException, IOException;
+
+    Searchable updateObject(Searchable object, Resource resource) throws ParseException, IOException;
+
     void commit() throws IOException;
 }
