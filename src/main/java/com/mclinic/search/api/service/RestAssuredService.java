@@ -135,4 +135,29 @@ public interface RestAssuredService extends Loggable {
      * @should remove an object from the internal index system
      */
     Searchable invalidate(final Searchable object, final Resource resource) throws ParseException, IOException;
+
+    /**
+     * Create an instance of object in the local repository.
+     * <p/>
+     * Internally, this method will serialize the object and using the resource configuration to create an entry in
+     * the lucene local repository.
+     *
+     * @param object   the object to be created
+     * @param resource the resource object which will describe how to index the json resource to lucene.
+     * @return the object that was created
+     */
+    Searchable createObject(Searchable object, Resource resource) throws ParseException, IOException;
+
+    /**
+     * Update an instance of object in the local repository.
+     * <p/>
+     * Internally, this method will perform invalidation of the object and then recreate the object in the local lucene
+     * repository. If the changes are performed on the unique searchable field, this method will end up creating a new
+     * entry in the lucene local repository.
+     *
+     * @param object   the object to be updated
+     * @param resource the resource object which will describe how to index the json resource to lucene.
+     * @return the object that was updated
+     */
+    Searchable updateObject(Searchable object, Resource resource) throws ParseException, IOException;
 }

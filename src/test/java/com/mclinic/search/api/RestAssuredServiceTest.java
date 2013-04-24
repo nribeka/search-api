@@ -201,7 +201,6 @@ public class RestAssuredServiceTest {
      */
     @Test
     public void getObject_shouldReturnObjectWithMatchingKey() throws Exception {
-
         Resource resource = Context.getResource(PATIENT_RESOURCE);
         Patient patient = (Patient) service.getObject(StringUtil.quote(patientUuid), resource);
         Assert.assertNotNull(patient);

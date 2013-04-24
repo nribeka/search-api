@@ -18,6 +18,7 @@ package com.mclinic.search.api.model.resolver;
 
 import com.mclinic.search.api.Loggable;
 
+import java.io.IOException;
 import java.net.URLConnection;
 
 public interface Resolver extends Loggable {
@@ -28,7 +29,7 @@ public interface Resolver extends Loggable {
      * @param searchString the search string.
      * @return full uri to the REST resource.
      */
-    String resolve(final String searchString);
+    String resolve(final String searchString) throws IOException;
 
     /**
      * Add authentication information to the url connection.
@@ -36,5 +37,5 @@ public interface Resolver extends Loggable {
      * @param connection the original connection without authentication information.
      * @return the url connection with authentication information.
      */
-    URLConnection authenticate(final URLConnection connection);
+    URLConnection authenticate(final URLConnection connection) throws IOException;
 }

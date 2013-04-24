@@ -493,4 +493,24 @@ public class DefaultIndexer implements Indexer {
         commit();
         return object;
     }
+
+    @Override
+    public Searchable createObject(final Searchable object, final Resource resource)
+            throws ParseException, IOException {
+        String jsonString = resource.serialize(object);
+        Object jsonObject = JsonPath.read(jsonString, "$");
+        writeObject(jsonObject, resource, getIndexWriter());
+        commit();
+        return object;
+    }
+
+    @Override
+    public Searchable updateObject(final Searchable object, final Resource resource)
+            throws ParseException, IOException {
+        String jsonString = resource.serialize(object);
+        Object jsonObject = JsonPath.read(jsonString, "$");
+        updateObject(jsonObject, resource, getIndexWriter());
+        commit();
+        return object;
+    }
 }
