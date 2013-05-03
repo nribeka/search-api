@@ -20,6 +20,7 @@ import com.mclinic.search.api.Loggable;
 import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.resource.Resource;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,10 @@ public interface Indexer extends Loggable {
     <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException;
 
     Searchable getObject(final String key, final Resource resource) throws ParseException, IOException;
+
+    <T> List<T> getObjects(final Query query, final Class<T> clazz) throws IOException;
+
+    List<Searchable> getObjects(final Query query, final Resource resource) throws IOException;
 
     <T> List<T> getObjects(final String searchString, final Class<T> clazz) throws ParseException, IOException;
 

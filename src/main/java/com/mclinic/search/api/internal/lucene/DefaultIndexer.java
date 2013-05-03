@@ -423,6 +423,30 @@ public class DefaultIndexer implements Indexer {
     }
 
     @Override
+    public <T> List<T> getObjects(final Query query, final Class<T> clazz) throws IOException {
+        List<T> objects = new ArrayList<T>();
+        List<Document> documents = findDocuments(query);
+        for (Document document : documents) {
+            String resourceName = document.get(DEFAULT_FIELD_RESOURCE);
+            Resource resource = getResourceRegistry().getEntryValue(resourceName);
+            String json = document.get(DEFAULT_FIELD_JSON);
+            objects.add(clazz.cast(resource.deserialize(json)));
+        }
+        return objects;
+    }
+
+    @Override
+    public List<Searchable> getObjects(final Query query, final Resource resource) throws IOException {
+        List<Searchable> objects = new ArrayList<Searchable>();
+        List<Document> documents = findDocuments(query);
+        for (Document document : documents) {
+            String json = document.get(DEFAULT_FIELD_JSON);
+            objects.add(resource.deserialize(json));
+        }
+        return objects;
+    }
+
+    @Override
     public <T> List<T> getObjects(final String searchString, final Class<T> clazz)
             throws ParseException, IOException {
         List<T> objects = new ArrayList<T>();
@@ -473,7 +497,7 @@ public class DefaultIndexer implements Indexer {
     @Override
     public Searchable deleteObject(final Searchable object, final Resource resource)
             throws ParseException, IOException {
-
+        // TODO: if the checksum is not available, we need to fallback to all properties query to find the document.
         String checksum = object.getChecksum();
         String queryString = createResourceQuery(resource);
         if (!StringUtil.isEmpty(checksum))

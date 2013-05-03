@@ -16,10 +16,14 @@
 
 package com.mclinic.search.api;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.mclinic.search.api.context.ServiceContext;
 import com.mclinic.search.api.exception.ServiceException;
 import com.mclinic.search.api.internal.file.ResourceFileFilter;
 import com.mclinic.search.api.module.JUnitModule;
 import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.module.SearchModule;
 import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.Resource;
@@ -52,33 +56,36 @@ import java.util.List;
 
 public class ServiceContextTest {
 
+    private ServiceContext serviceContext;
+
     @Before
     public void prepare() throws Exception {
+        Injector injector = Guice.createInjector(new SearchModule(), new JUnitModule());
+        serviceContext = injector.getInstance(ServiceContext.class);
         // initialize context object with additional parameters from the junit module
-        Context.initialize(new JUnitModule());
 
         // register algorithms classes for the testing
-        Context.registerAlgorithm(new PatientAlgorithm());
-        Context.registerAlgorithm(new CohortAlgorithm());
-        Context.registerAlgorithm(new CohortMemberAlgorithm());
-        Context.registerAlgorithm(new ObservationAlgorithm());
+        serviceContext.registerAlgorithm(new PatientAlgorithm());
+        serviceContext.registerAlgorithm(new CohortAlgorithm());
+        serviceContext.registerAlgorithm(new CohortMemberAlgorithm());
+        serviceContext.registerAlgorithm(new ObservationAlgorithm());
 
         // register resolver classes for the testing
-        Context.registerResolver(new PatientResolver());
-        Context.registerResolver(new CohortResolver());
-        Context.registerResolver(new CohortMemberResolver());
-        Context.registerResolver(new ObservationResolver());
+        serviceContext.registerResolver(new PatientResolver());
+        serviceContext.registerResolver(new CohortResolver());
+        serviceContext.registerResolver(new CohortMemberResolver());
+        serviceContext.registerResolver(new ObservationResolver());
 
         // register domain object classes for the testing
-        Context.registerObject(new Patient());
-        Context.registerObject(new Cohort());
-        Context.registerObject(new CohortMember());
-        Context.registerObject(new Observation());
+        serviceContext.registerObject(new Patient());
+        serviceContext.registerObject(new Cohort());
+        serviceContext.registerObject(new CohortMember());
+        serviceContext.registerObject(new Observation());
     }
 
     /**
      * @verifies register resource object.
-     * @see com.mclinic.search.api.context.ServiceContext#registerResource(com.mclinic.search.api.resource.Resource)
+     * @see ServiceContext#registerResource(com.mclinic.search.api.resource.Resource)
      */
     @Test
     public void registerResource_shouldRegisterResourceObject() throws Exception {
@@ -87,19 +94,18 @@ public class ServiceContextTest {
         Resource resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getName()).thenReturn(resourceName);
 
-        Context.initialize(new JUnitModule());
-        Context.registerResource(resource);
+        serviceContext.registerResource(resource);
         // check the registration process
-        Assert.assertTrue(Context.getResources().size() > 0);
+        Assert.assertTrue(serviceContext.getResources().size() > 0);
 
         // check the registered resource internal property
-        Resource registeredResource = Context.getResource(resourceName);
+        Resource registeredResource = serviceContext.getResource(resourceName);
         Assert.assertNotNull(registeredResource);
     }
 
     /**
      * @verifies not register resource without resource name.
-     * @see Context#registerResource(com.mclinic.search.api.resource.Resource)
+     * @see ServiceContext#registerResource(com.mclinic.search.api.resource.Resource)
      */
     @Test(expected = ServiceException.class)
     public void registerResource_shouldNotRegisterResourceWithoutResourceName() throws Exception {
@@ -108,43 +114,42 @@ public class ServiceContextTest {
         Resource resource = Mockito.mock(Resource.class);
         Mockito.when(resource.getName()).thenReturn(resourceName);
 
-        Context.initialize(new JUnitModule());
         // should throw exception here
-        Context.registerResource(resource);
+        serviceContext.registerResource(resource);
     }
 
     /**
      * @verifies only register resource files with j2l extension.
-     * @see Context#registerResources(java.io.File)
+     * @see ServiceContext#registerResources(java.io.File)
      */
     @Test
     public void registerResources_shouldOnlyRegisterResourceFilesWithJ2lExtension() throws Exception {
 
-        URL url = Context.class.getResource("sample/j2l");
+        URL url = ServiceContextTest.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-        Context.registerResources(resourceFile);
+        serviceContext.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
         Assert.assertNotNull(files);
-        Assert.assertEquals(files.length, Context.getResources().size());
+        Assert.assertEquals(files.length, serviceContext.getResources().size());
     }
 
     /**
      * @verifies recursively register all resources inside directory.
-     * @see com.mclinic.search.api.context.ServiceContext#registerResources(java.io.File)
+     * @see ServiceContext#registerResources(java.io.File)
      */
     @Test
     public void registerResources_shouldRecursivelyRegisterAllResourcesInsideDirectory() throws Exception {
 
-        URL url = Context.class.getResource("sample/j2l");
+        URL url = ServiceContextTest.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-        Context.registerResources(resourceFile);
+        serviceContext.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
         for (File file : files) {
             Registry<String, String> stringRegistry = ResourceUtil.readConfiguration(file);
             String resourceName = stringRegistry.getEntryValue(ResourceConstants.RESOURCE_NAME);
-            Resource registeredResource = Context.getResource(resourceName);
+            Resource registeredResource = serviceContext.getResource(resourceName);
             Assert.assertNotNull(registeredResource);
             Assert.assertEquals(stringRegistry.getEntryValue(ResourceConstants.RESOURCE_ROOT_NODE),
                     registeredResource.getRootNode());
@@ -165,20 +170,20 @@ public class ServiceContextTest {
 
     /**
      * @verifies create valid resource object based on the resource file.
-     * @see Context#registerResources(java.io.File)
+     * @see ServiceContext#registerResources(java.io.File)
      */
     @Test
     public void registerResources_shouldCreateValidResourceObjectBasedOnTheResourceFile() throws Exception {
 
-        URL url = Context.class.getResource("sample/j2l");
+        URL url = ServiceContextTest.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-        Context.registerResources(resourceFile);
+        serviceContext.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
         for (File file : files) {
             Registry<String, String> stringRegistry = ResourceUtil.readConfiguration(file);
             String resourceName = stringRegistry.getEntryValue(ResourceConstants.RESOURCE_NAME);
-            Resource registeredResource = Context.getResource(resourceName);
+            Resource registeredResource = serviceContext.getResource(resourceName);
             Assert.assertNotNull(registeredResource);
             Assert.assertEquals(stringRegistry.getEntryValue(ResourceConstants.RESOURCE_ROOT_NODE),
                     registeredResource.getRootNode());
@@ -199,119 +204,119 @@ public class ServiceContextTest {
 
     /**
      * @verifies return all registered resource object.
-     * @see Context#getResources()
+     * @see ServiceContext#getResources()
      */
     @Test
     public void getResources_shouldReturnAllRegisteredResourceObject() throws Exception {
 
-        URL url = Context.class.getResource("sample/j2l");
+        URL url = ServiceContextTest.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-        Context.registerResources(resourceFile);
+        serviceContext.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
         Assert.assertNotNull(files);
         for (File file : files) {
             Registry<String, String> stringRegistry = ResourceUtil.readConfiguration(file);
             String resourceName = stringRegistry.getEntryValue(ResourceConstants.RESOURCE_NAME);
-            Resource registeredResource = Context.getResource(resourceName);
+            Resource registeredResource = serviceContext.getResource(resourceName);
             Assert.assertNotNull(registeredResource);
         }
     }
 
     /**
      * @verifies return resource object based on the name of the resource.
-     * @see Context#getResource(String)
+     * @see ServiceContext#getResource(String)
      */
     @Test
     public void getResource_shouldReturnResourceObjectBasedOnTheNameOfTheResource() throws Exception {
 
-        URL url = Context.class.getResource("sample/j2l");
+        URL url = ServiceContextTest.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-        Context.registerResources(resourceFile);
+        serviceContext.registerResources(resourceFile);
 
         File[] files = resourceFile.listFiles(new ResourceFileFilter());
         Assert.assertNotNull(files);
         for (File file : files) {
             Registry<String, String> stringRegistry = ResourceUtil.readConfiguration(file);
             String resourceName = stringRegistry.getEntryValue(ResourceConstants.RESOURCE_NAME);
-            Resource registeredResource = Context.getResource(resourceName);
+            Resource registeredResource = serviceContext.getResource(resourceName);
             Assert.assertNotNull(registeredResource);
         }
     }
 
     /**
      * @verifies return removed resource object
-     * @see Context#removeResource(com.mclinic.search.api.resource.Resource)
+     * @see ServiceContext#removeResource(com.mclinic.search.api.resource.Resource)
      */
     @Test
     public void removeResource_shouldReturnRemovedResourceObject() throws Exception {
 
-        URL url = Context.class.getResource("sample/j2l");
+        URL url = ServiceContextTest.class.getResource("sample/j2l");
         File resourceFile = new File(url.getPath());
-        Context.registerResources(resourceFile);
+        serviceContext.registerResources(resourceFile);
 
-        int resourceCounter = Context.getResources().size();
-        Resource registeredResource = Context.getResource("Cohort Member Resource");
-        Resource removedResource = Context.removeResource(registeredResource);
+        int resourceCounter = serviceContext.getResources().size();
+        Resource registeredResource = serviceContext.getResource("Cohort Member Resource");
+        Resource removedResource = serviceContext.removeResource(registeredResource);
         Assert.assertEquals(registeredResource, removedResource);
 
-        Assert.assertEquals(resourceCounter - 1, Context.getResources().size());
+        Assert.assertEquals(resourceCounter - 1, serviceContext.getResources().size());
     }
 
     /**
      * @verifies register domain object using the class name.
-     * @see com.mclinic.search.api.context.ServiceContext#registerObject(com.mclinic.search.api.model.object.Searchable)
+     * @see ServiceContext#registerObject(com.mclinic.search.api.model.object.Searchable)
      */
     @Test
     public void registerObject_shouldRegisterDomainObjectUsingTheClassName() throws Exception {
-        Searchable clazz = Context.getObject(Patient.class.getName());
+        Searchable clazz = serviceContext.getObject(Patient.class.getName());
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Patient.class.getName(), clazz.getClass().getName());
-        Context.removeObject(clazz);
-        clazz = Context.getObject(Patient.class.getName());
+        serviceContext.removeObject(clazz);
+        clazz = serviceContext.getObject(Patient.class.getName());
         Assert.assertNull(clazz);
 
-        clazz = Context.getObject(Observation.class.getName());
+        clazz = serviceContext.getObject(Observation.class.getName());
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Observation.class.getName(), clazz.getClass().getName());
-        Context.removeObject(clazz);
-        clazz = Context.getObject(Observation.class.getName());
+        serviceContext.removeObject(clazz);
+        clazz = serviceContext.getObject(Observation.class.getName());
         Assert.assertNull(clazz);
 
-        clazz = Context.getObject(Cohort.class.getName());
+        clazz = serviceContext.getObject(Cohort.class.getName());
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Cohort.class.getName(), clazz.getClass().getName());
-        Context.removeObject(clazz);
-        clazz = Context.getObject(Cohort.class.getName());
+        serviceContext.removeObject(clazz);
+        clazz = serviceContext.getObject(Cohort.class.getName());
         Assert.assertNull(clazz);
     }
 
     /**
      * @verifies register algorithm using the class name.
-     * @see com.mclinic.search.api.context.ServiceContext#registerAlgorithm(com.mclinic.search.api.model.serialization.Algorithm)
+     * @see ServiceContext#registerAlgorithm(com.mclinic.search.api.model.serialization.Algorithm)
      */
     @Test
     public void registerAlgorithm_shouldRegisterAlgorithmUsingTheClassName() throws Exception {
-        Algorithm algorithm = Context.getAlgorithm(PatientAlgorithm.class.getName());
+        Algorithm algorithm = serviceContext.getAlgorithm(PatientAlgorithm.class.getName());
         Assert.assertNotNull(algorithm);
         Assert.assertEquals(PatientAlgorithm.class.getName(), algorithm.getClass().getName());
 
-        algorithm = Context.getAlgorithm(CohortMemberAlgorithm.class.getName());
+        algorithm = serviceContext.getAlgorithm(CohortMemberAlgorithm.class.getName());
         Assert.assertNotNull(algorithm);
         Assert.assertEquals(CohortMemberAlgorithm.class.getName(), algorithm.getClass().getName());
     }
 
     /**
      * @verifies register resolver using the class name.
-     * @see com.mclinic.search.api.context.ServiceContext#registerResolver(com.mclinic.search.api.model.resolver.Resolver)
+     * @see ServiceContext#registerResolver(com.mclinic.search.api.model.resolver.Resolver)
      */
     @Test
     public void registerResolver_shouldRegisterResolverUsingTheClassName() throws Exception {
-        Resolver resolver = Context.getResolver(PatientResolver.class.getName());
+        Resolver resolver = serviceContext.getResolver(PatientResolver.class.getName());
         Assert.assertNotNull(resolver);
         Assert.assertEquals(PatientResolver.class.getName(), resolver.getClass().getName());
 
-        resolver = Context.getResolver(CohortMemberResolver.class.getName());
+        resolver = serviceContext.getResolver(CohortMemberResolver.class.getName());
         Assert.assertNotNull(resolver);
         Assert.assertEquals(CohortMemberResolver.class.getName(), resolver.getClass().getName());
     }
