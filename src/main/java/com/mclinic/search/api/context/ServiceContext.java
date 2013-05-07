@@ -34,7 +34,9 @@ import com.mclinic.search.api.util.StringUtil;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,9 +54,6 @@ public final class ServiceContext {
 
     @Inject
     private Registry<String, Resource> resourceRegistry;
-
-    @Inject
-    private RestAssuredService service;
 
     protected ServiceContext() {
         objectRegistry = new DefaultRegistry<String, Searchable>();
@@ -76,10 +75,6 @@ public final class ServiceContext {
 
     private Registry<String, Resource> getResourceRegistry() {
         return resourceRegistry;
-    }
-
-    public RestAssuredService getService() {
-        return service;
     }
 
     /**
@@ -122,7 +117,7 @@ public final class ServiceContext {
     public void registerResources(final File file) throws IOException, ServiceException {
         FileFilter fileFilter = new ResourceFileFilter();
         if (!file.isDirectory() && fileFilter.accept(file)) {
-            registerResource(createResource(file));
+            registerResource(new FileInputStream(file));
         } else {
             File[] files = file.listFiles(fileFilter);
             if (files != null) {
@@ -133,18 +128,29 @@ public final class ServiceContext {
     }
 
     /**
+     * Read the input stream and then convert it into resource object and register them.
+     *
+     * @param inputStream the input stream to the configuration.
+     * @throws IOException when the parser fail to read the configuration input stream.
+     * @should create valid resource object based on the resource input stream.
+     */
+    public void registerResource(final InputStream inputStream) throws IOException, ServiceException {
+        registerResource(createResource(inputStream));
+    }
+
+    /**
      * Internal method to convert the actual resource file into the resource object.
      *
-     * @param file the file
+     * @param inputStream the input stream to the configuration.
      * @return the resource object
      * @throws IOException when the parser fail to read the configuration file
      */
-    private Resource createResource(final File file) throws IOException, ServiceException {
+    private Resource createResource(final InputStream inputStream) throws IOException, ServiceException {
 
         // TODO: see this gist to prevent re-reading the same resource file if it's already registered
         // https://gist.github.com/3998818
 
-        Registry<String, String> properties = ResourceUtil.readConfiguration(file);
+        Registry<String, String> properties = ResourceUtil.readConfiguration(inputStream);
         String resourceName = properties.getEntryValue(ResourceConstants.RESOURCE_NAME);
 
         String rootNode = properties.getEntryValue(ResourceConstants.RESOURCE_ROOT_NODE);
@@ -154,17 +160,20 @@ public final class ServiceContext {
         String objectClassKey = properties.getEntryValue(ResourceConstants.RESOURCE_SEARCHABLE);
         Searchable searchable = getObjectRegistry().getEntryValue(objectClassKey);
         if (searchable == null)
-            throw new ServiceException("Unable to create resource because of missing rest assured object.");
+            throw new ServiceException("Unable to create resource because of missing rest assured object. " +
+                    "Expecting object of type: " + objectClassKey);
 
         String algorithmKey = properties.getEntryValue(ResourceConstants.RESOURCE_ALGORITHM_CLASS);
         Algorithm algorithm = getAlgorithmRegistry().getEntryValue(algorithmKey);
         if (algorithm == null)
-            throw new ServiceException("Unable to create resource because of missing algorithm object.");
+            throw new ServiceException("Unable to create resource because of missing algorithm object. " +
+                    "Expecting algorithm of type: " + algorithmKey);
 
         String resolverKey = properties.getEntryValue(ResourceConstants.RESOURCE_URI_RESOLVER_CLASS);
         Resolver resolver = getResolverRegistry().getEntryValue(resolverKey);
         if (resolver == null)
-            throw new ServiceException("Unable to create resource because of missing resolver object.");
+            throw new ServiceException("Unable to create resource because of missing resolver object. " +
+                    "Expecting resolver of type: " + resolverKey);
 
         Resource resource = new ObjectResource(resourceName, rootNode, searchable.getClass(), algorithm, resolver);
 

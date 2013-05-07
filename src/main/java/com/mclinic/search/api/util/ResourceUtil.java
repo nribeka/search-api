@@ -22,19 +22,20 @@ import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.resource.ResourceConstants;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class ResourceUtil {
 
-    public static Registry<String, String> readConfiguration(final File file)
+    public static Registry<String, String> readConfiguration(final InputStream inputStream)
             throws ParseException, IOException {
 
         Registry<String, String> registry = new DefaultRegistry<String, String>();
 
         Properties properties = new Properties();
-        properties.load(new FileReader(file));
+        properties.load(inputStream);
 
         for (String mandatoryField : ResourceConstants.MANDATORY_FIELDS) {
             if (!properties.containsKey(mandatoryField))
@@ -46,6 +47,13 @@ public class ResourceUtil {
             registry.putEntry(propertyName, properties.getProperty(propertyName));
         }
         return registry;
+
+    }
+
+    public static Registry<String, String> readConfiguration(final File file)
+            throws ParseException, IOException {
+        InputStream inputStream = new FileInputStream(file);
+        return readConfiguration(inputStream);
     }
 
 }
