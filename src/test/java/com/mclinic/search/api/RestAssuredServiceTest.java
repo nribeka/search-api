@@ -83,7 +83,7 @@ public class RestAssuredServiceTest {
         Injector injector = Guice.createInjector(new SearchModule(), new JUnitModule());
         context = injector.getInstance(ServiceContext.class);
 
-        context.registerObject(new Patient());
+        context.registerSearchable(new Patient());
         context.registerResolver(new PatientResolver());
         context.registerAlgorithm(new PatientAlgorithm());
 

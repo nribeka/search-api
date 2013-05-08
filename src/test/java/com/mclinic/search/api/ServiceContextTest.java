@@ -77,10 +77,10 @@ public class ServiceContextTest {
         serviceContext.registerResolver(new ObservationResolver());
 
         // register domain object classes for the testing
-        serviceContext.registerObject(new Patient());
-        serviceContext.registerObject(new Cohort());
-        serviceContext.registerObject(new CohortMember());
-        serviceContext.registerObject(new Observation());
+        serviceContext.registerSearchable(new Patient());
+        serviceContext.registerSearchable(new Cohort());
+        serviceContext.registerSearchable(new CohortMember());
+        serviceContext.registerSearchable(new Observation());
     }
 
     /**
@@ -265,29 +265,29 @@ public class ServiceContextTest {
 
     /**
      * @verifies register domain object using the class name.
-     * @see ServiceContext#registerObject(com.mclinic.search.api.model.object.Searchable)
+     * @see ServiceContext#registerSearchable(com.mclinic.search.api.model.object.Searchable)
      */
     @Test
     public void registerObject_shouldRegisterDomainObjectUsingTheClassName() throws Exception {
-        Searchable clazz = serviceContext.getObject(Patient.class.getName());
+        Searchable clazz = serviceContext.getSearchable(Patient.class.getName());
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Patient.class.getName(), clazz.getClass().getName());
-        serviceContext.removeObject(clazz);
-        clazz = serviceContext.getObject(Patient.class.getName());
+        serviceContext.removeSearchable(clazz);
+        clazz = serviceContext.getSearchable(Patient.class.getName());
         Assert.assertNull(clazz);
 
-        clazz = serviceContext.getObject(Observation.class.getName());
+        clazz = serviceContext.getSearchable(Observation.class.getName());
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Observation.class.getName(), clazz.getClass().getName());
-        serviceContext.removeObject(clazz);
-        clazz = serviceContext.getObject(Observation.class.getName());
+        serviceContext.removeSearchable(clazz);
+        clazz = serviceContext.getSearchable(Observation.class.getName());
         Assert.assertNull(clazz);
 
-        clazz = serviceContext.getObject(Cohort.class.getName());
+        clazz = serviceContext.getSearchable(Cohort.class.getName());
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Cohort.class.getName(), clazz.getClass().getName());
-        serviceContext.removeObject(clazz);
-        clazz = serviceContext.getObject(Cohort.class.getName());
+        serviceContext.removeSearchable(clazz);
+        clazz = serviceContext.getSearchable(Cohort.class.getName());
         Assert.assertNull(clazz);
     }
 

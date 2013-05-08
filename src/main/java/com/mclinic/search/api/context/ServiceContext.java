@@ -233,22 +233,22 @@ public final class ServiceContext {
      * @param searchable the domain object.
      * @should register domain object using the class name.
      */
-    public void registerObject(final Searchable searchable) throws ServiceException {
+    public void registerSearchable(final Searchable searchable) throws ServiceException {
         if (searchable == null)
             throw new ServiceException("Trying to register invalid domain object.");
 
         getObjectRegistry().putEntry(searchable.getClass().getName(), searchable);
     }
 
-    public Searchable getObject(final String name) {
+    public Searchable getSearchable(final String name) {
         return getObjectRegistry().getEntryValue(name);
     }
 
-    public Searchable removeObject(final Searchable searchable) {
+    public Searchable removeSearchable(final Searchable searchable) {
         return getObjectRegistry().removeEntry(searchable.getClass().getName());
     }
 
-    public boolean containsObject(final Searchable searchable) {
+    public boolean containsSearchable(final Searchable searchable) {
         return getObjectRegistry().hasEntry(searchable.getClass().getName());
     }
 
