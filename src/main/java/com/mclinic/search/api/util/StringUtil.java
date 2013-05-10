@@ -18,6 +18,7 @@ package com.mclinic.search.api.util;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,39 +36,28 @@ public class StringUtil {
      */
     public static final String EMPTY = "";
 
+
+    private static final char[] QUERY_PARSER_ESCAPE_CHARACTER =
+            new char[]{'+', '-', '&', '|', '!', '(', ')', '{', '}', '[', ']', '^', '"', '~', '?', ':', '\\'};
+
     /**
      * <pre>
-     *     StringUtil.escapeUri("localhost:8081/" = "localhost\:8081\/"
+     *     StringUtil.sanitize("localhost:8081/" = "localhost 8081 "
      * </pre>
-     * @param uri the uri to be escaped
-     * @return the escaped uri
+     *
+     * @param str the string to be sanitized.
+     * @return the sanitized string.
      */
-    public static String escapeUri(final String uri) {
-        StringWriter writer = new StringWriter(uri.length() * 2);
-
-        int size = uri.length();
-        for (int i = 0; i < size; i++) {
-            char ch = uri.charAt(i);
-            switch (ch) {
-                case '/':
-                    writer.write('\\');
-                    writer.write('/');
-                    break;
-                case ':':
-                    writer.write('\\');
-                    writer.write(':');
-                    break;
-                case '-':
-                    writer.write('\\');
-                    writer.write('-');
-                    break;
-                default:
-                    writer.write(ch);
-                    break;
-            }
+    public static String sanitize(final String str) {
+        if (str == null) {
+            return null;
         }
 
-        return writer.toString();
+        String sanitized = str;
+        for (char c : QUERY_PARSER_ESCAPE_CHARACTER) {
+            sanitized = sanitized.replace(c, ' ');
+        }
+        return sanitized;
     }
 
     /**
@@ -77,7 +67,7 @@ public class StringUtil {
      * StringUtils.lowerCase("aBc") = "abc"
      * </pre>
      *
-     * @param str  the String to lower case, may be null
+     * @param str the String to lower case, may be null
      * @return the lower cased String, <code>null</code> if null String input
      */
     public static String lowerCase(String str) {

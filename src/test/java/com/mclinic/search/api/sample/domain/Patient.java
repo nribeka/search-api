@@ -32,8 +32,6 @@ public class Patient extends BaseSearchable {
 
     private String gender;
 
-    private String checksum;
-
     /**
      * Get the patient internal uuid
      *

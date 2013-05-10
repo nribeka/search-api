@@ -190,7 +190,6 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @should return all object matching the search query string and class
      * @should return empty list when no object match the search query and class
      */
-    @Override
     public <T> List<T> getObjects(final Query query, final Class<T> clazz) throws IOException {
         return indexer.getObjects(query, clazz);
     }
@@ -205,7 +204,6 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @should return all object matching the search query and resource
      * @should return empty list when no object match the search query and resource
      */
-    @Override
     public List<Searchable> getObjects(final Query query, final Resource resource) throws IOException {
         return indexer.getObjects(query, resource);
     }
