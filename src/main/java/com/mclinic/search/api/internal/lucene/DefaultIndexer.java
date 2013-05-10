@@ -444,6 +444,11 @@ public class DefaultIndexer implements Indexer {
     @Override
     public <T> List<T> getObjects(final Query query, final Class<T> clazz) throws IOException {
         List<T> objects = new ArrayList<T>();
+
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createClassQuery(clazz), BooleanClause.Occur.MUST);
+        booleanQuery.add(query, BooleanClause.Occur.MUST);
+
         List<Document> documents = findDocuments(query);
         for (Document document : documents) {
             String resourceName = document.get(DEFAULT_FIELD_RESOURCE);
@@ -457,7 +462,12 @@ public class DefaultIndexer implements Indexer {
     @Override
     public List<Searchable> getObjects(final Query query, final Resource resource) throws IOException {
         List<Searchable> objects = new ArrayList<Searchable>();
-        List<Document> documents = findDocuments(query);
+
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createResourceQuery(resource), BooleanClause.Occur.MUST);
+        booleanQuery.add(query, BooleanClause.Occur.MUST);
+
+        List<Document> documents = findDocuments(booleanQuery);
         for (Document document : documents) {
             String json = document.get(DEFAULT_FIELD_JSON);
             objects.add(resource.deserialize(json));

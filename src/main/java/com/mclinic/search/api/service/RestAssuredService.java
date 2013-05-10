@@ -17,10 +17,10 @@
 package com.mclinic.search.api.service;
 
 import com.mclinic.search.api.Loggable;
+import com.mclinic.search.api.filter.Filter;
 import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.resource.Resource;
 import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.Query;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +95,32 @@ public interface RestAssuredService extends Loggable {
      * @should throw IOException if the key and resource unable to return unique object
      */
     Searchable getObject(final String key, final Resource resource) throws ParseException, IOException;
+
+    /**
+     * Search for objects with matching <code>filter</code> and <code>clazz</code> type from the local repository.
+     * This method will return list of all matching object or empty list if no object match the search query.
+     *
+     *
+     * @param filters the search filter to limit the number of returned object
+     * @param clazz   the expected return type of the object
+     * @return list of all object with matching <code>query</code> and <code>clazz</code> or empty list
+     * @should return all object matching the search query string and class
+     * @should return empty list when no object match the search query and class
+     */
+    <T> List<T> getObjects(final List<Filter> filters, final Class<T> clazz) throws IOException;
+
+    /**
+     * Search for objects with matching <code>filters</code> and <code>resource</code> type from the local repository.
+     * This method will return list of all matching object or empty list if no object match the search query.
+     *
+     *
+     * @param filters  the search filter to limit the number of returned object
+     * @param resource the resource descriptor used to register the object
+     * @return list of all object with matching <code>query</code> and <code>resource</code> or empty list
+     * @should return all object matching the search query and resource
+     * @should return empty list when no object match the search query and resource
+     */
+    List<Searchable> getObjects(final List<Filter> filters, final Resource resource) throws IOException;
 
     /**
      * Search for objects with matching <code>searchString</code> and <code>clazz</code> type from the local repository.
