@@ -72,6 +72,23 @@ public class StringUtil {
 
     /**
      * <pre>
+     * StringUtils.lowerCase(null)  = null
+     * StringUtils.lowerCase("")    = ""
+     * StringUtils.lowerCase("aBc") = "abc"
+     * </pre>
+     *
+     * @param str  the String to lower case, may be null
+     * @return the lower cased String, <code>null</code> if null String input
+     */
+    public static String lowerCase(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.toLowerCase();
+    }
+
+    /**
+     * <pre>
      * StringUtil.isEmpty(null)      = true
      * StringUtil.isEmpty("")        = true
      * StringUtil.isEmpty(" ")       = false
@@ -87,29 +104,6 @@ public class StringUtil {
     }
 
     /**
-     * <pre>
-     * StringUtil.isBlank(null)      = true
-     * StringUtil.isBlank("")        = true
-     * StringUtil.isBlank(" ")       = true
-     * StringUtil.isBlank("bob")     = false
-     * StringUtil.isBlank("  bob  ") = false
-     * </pre>
-     *
-     * @param str the String to check, may be null
-     * @return <code>true</code> if the String is null, empty or whitespace
-     */
-    public static boolean isBlank(final String str) {
-        int strLen;
-        if (str == null || (strLen = str.length()) == 0)
-            return true;
-        for (int i = 0; i < strLen; i++) {
-            if (!Character.isWhitespace(str.charAt(i)))
-                return false;
-        }
-        return true;
-    }
-
-    /**
      * Quote the string with single quote.
      *
      * @param str the string to be quoted
@@ -117,36 +111,6 @@ public class StringUtil {
      */
     public static String quote(String str) {
         return str != null ? "\"" + str + "\"" : null;
-    }
-
-    /**
-     * <pre>
-     * StringUtil.defaultString(null)  = ""
-     * StringUtil.defaultString("")    = ""
-     * StringUtil.defaultString("bat") = "bat"
-     * </pre>
-     *
-     * @param str the String to check, may be null
-     * @return the passed in String, or the empty String if it was <code>null</code>
-     * @see String#valueOf(Object)
-     */
-    public static String defaultString(final String str) {
-        return str == null ? EMPTY : str;
-    }
-
-    /**
-     * <pre>
-     * StringUtil.defaultString(null, "NULL")  = "NULL"
-     * StringUtil.defaultString("", "NULL")    = ""
-     * StringUtil.defaultString("bat", "NULL") = "bat"
-     * </pre>
-     *
-     * @param str        the String to check, may be null
-     * @param defaultStr the default String to return if the input is <code>null</code>, may be null
-     * @return the passed in String, or the default if it was <code>null</code>
-     */
-    public static String defaultString(final String str, final String defaultStr) {
-        return str == null ? defaultStr : str;
     }
 
     /**
@@ -165,58 +129,6 @@ public class StringUtil {
      */
     public static boolean equals(final String str1, final String str2) {
         return str1 == null ? str2 == null : str1.equals(str2);
-    }
-
-    /**
-     * <pre>
-     * StringUtil.equalsIgnoreCase(null, null)   = true
-     * StringUtil.equalsIgnoreCase(null, "abc")  = false
-     * StringUtil.equalsIgnoreCase("abc", null)  = false
-     * StringUtil.equalsIgnoreCase("abc", "abc") = true
-     * StringUtil.equalsIgnoreCase("abc", "ABC") = true
-     * </pre>
-     *
-     * @param str1 the first String, may be null
-     * @param str2 the second String, may be null
-     * @return <code>true</code> if the Strings are equal, case insensitive, or both <code>null</code>
-     * @see java.lang.String#equalsIgnoreCase(String)
-     */
-    public static boolean equalsIgnoreCase(final String str1, final String str2) {
-        return str1 == null ? str2 == null : str1.equalsIgnoreCase(str2);
-    }
-
-    /**
-     * <pre>
-     * StringUtil.split(null)       = null
-     * StringUtil.split("")         = []
-     * StringUtil.split("abc def")  = ["abc", "def"]
-     * StringUtil.split("abc  def") = ["abc", "def"]
-     * StringUtil.split(" abc ")    = ["abc"]
-     * </pre>
-     *
-     * @param str the String to parse, may be null
-     * @return an array of parsed Strings, <code>null</code> if null String input
-     */
-    public static String[] split(final String str) {
-        return split(str, null, -1);
-    }
-
-    /**
-     * <pre>
-     * StringUtil.split(null, *)         = null
-     * StringUtil.split("", *)           = []
-     * StringUtil.split("a.b.c", '.')    = ["a", "b", "c"]
-     * StringUtil.split("a..b.c", '.')   = ["a", "b", "c"]
-     * StringUtil.split("a:b:c", '.')    = ["a:b:c"]
-     * StringUtil.split("a b c", ' ')    = ["a", "b", "c"]
-     * </pre>
-     *
-     * @param str           the String to parse, may be null
-     * @param separatorChar the character used as the delimiter
-     * @return an array of parsed Strings, <code>null</code> if null String input
-     */
-    public static String[] split(final String str, final char separatorChar) {
-        return splitWorker(str, separatorChar, false);
     }
 
     /**

@@ -1,83 +1,10 @@
 {
-  "identifiers": [
-    {
-      "uuid": "dd315417-1691-11df-97a5-7038c432aabf",
-      "links": [
-        {
-          "rel": "self",
-          "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dda926e4-1691-11df-97a5-7038c432aabf/identifier/dd315417-1691-11df-97a5-7038c432aabf"
-        }
-      ],
-      "display": "Old AMPATH Medical Record Number = 9176BF-3"
-    }
-  ],
-  "uuid": "dda926e4-1691-11df-97a5-7038c432aabf",
-  "resourceVersion": "1.8",
-  "person": {
-    "causeOfDeath": null,
-    "preferredName": {
-      "uuid": "decfef80-1691-11df-97a5-7038c432aabf",
-      "links": [
-        {
-          "rel": "self",
-          "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dda926e4-1691-11df-97a5-7038c432aabf/name/decfef80-1691-11df-97a5-7038c432aabf"
-        }
-      ],
-      "display": "Testarius Kapkiyei Bowen"
-    },
+    "patientIdentifier.identifier": "9176BF-3",
+    "personName.familyName": "Bowen",
     "birthdate": "1975-08-02T00:00:00.000-0500",
-    "age": 37,
-    "uuid": null,
-    "dead": false,
-    "resourceVersion": "1.8",
-    "preferredAddress": {
-      "uuid": "de02cdad-1691-11df-97a5-7038c432aabf",
-      "links": [
-        {
-          "rel": "self",
-          "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dda926e4-1691-11df-97a5-7038c432aabf/address/de02cdad-1691-11df-97a5-7038c432aabf"
-        }
-      ],
-      "display": null
-    },
-    "deathDate": null,
-    "links": [
-      {
-        "rel": "self",
-        "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/null"
-      },
-      {
-        "rel": "full",
-        "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/null?v=full"
-      }
-    ],
-    "voided": false,
-    "birthdateEstimated": false,
-    "display": "Testarius Kapkiyei Bowen",
-    "attributes": [
-      {
-        "uuid": "de654d70-1691-11df-97a5-7038c432aabf",
-        "links": [
-          {
-            "rel": "self",
-            "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dda926e4-1691-11df-97a5-7038c432aabf/attribute/de654d70-1691-11df-97a5-7038c432aabf"
-          }
-        ],
-        "display": "Mother's Name = Modline"
-      }
-    ],
-    "gender": "M"
-  },
-  "links": [
-    {
-      "rel": "self",
-      "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dda926e4-1691-11df-97a5-7038c432aabf"
-    },
-    {
-      "rel": "full",
-      "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dda926e4-1691-11df-97a5-7038c432aabf?v=full"
-    }
-  ],
-  "voided": false,
-  "display": "9176BF-3 - Testarius Kapkiyei Bowen"
+    "patientIdentifier.identifierType.name": "Old AMPATH Medical Record Number",
+    "gender": "M",
+    "uuid": "dda926e4-1691-11df-97a5-7038c432aabf",
+    "personName.middleName": "Kapkiyei",
+    "personName.givenName": "Testarius"
 }

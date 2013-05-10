@@ -146,7 +146,7 @@ public class ObjectResource implements Resource {
      * @return the class for which this resource applicable to.
      */
     @Override
-    public Class getResourceObject() {
+    public Class getSearchable() {
         return this.objectClass;
     }
 

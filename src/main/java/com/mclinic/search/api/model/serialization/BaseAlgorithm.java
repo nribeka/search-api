@@ -15,11 +15,6 @@ package com.mclinic.search.api.model.serialization;
 
 import com.google.inject.Inject;
 import com.mclinic.search.api.logger.Logger;
-import com.mclinic.search.api.model.object.Searchable;
-import com.mclinic.search.api.util.DigestUtil;
-
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  */

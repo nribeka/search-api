@@ -26,7 +26,7 @@ import java.util.GregorianCalendar;
  * Helper class for handling ISO 8601 strings of the following format:
  * "2008-03-01T13:00:00+01:00". It also supports parsing the "Z" timezone.
  */
-public final class ISO8601Util {
+public class ISO8601Util {
 
     /**
      * Transform Calendar to ISO 8601 string.

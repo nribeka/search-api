@@ -27,7 +27,6 @@ import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.resource.SearchableField;
 import com.mclinic.search.api.util.CollectionUtil;
-import com.mclinic.search.api.util.DigestUtil;
 import com.mclinic.search.api.util.StreamUtil;
 import com.mclinic.search.api.util.StringUtil;
 import net.minidev.json.JSONArray;
@@ -120,8 +119,9 @@ public class DefaultIndexer implements Indexer {
      */
 
     private IndexWriter getIndexWriter() throws IOException {
-        if (indexWriter == null)
+        if (indexWriter == null) {
             indexWriter = writerProvider.get();
+        }
         return indexWriter;
     }
 
@@ -131,8 +131,9 @@ public class DefaultIndexer implements Indexer {
 
     private IndexSearcher getIndexSearcher() throws IOException {
         try {
-            if (indexSearcher == null)
+            if (indexSearcher == null) {
                 indexSearcher = searcherProvider.get();
+            }
         } catch (IOException e) {
             // silently ignoring this exception.
         }
@@ -192,6 +193,10 @@ public class DefaultIndexer implements Indexer {
         StringBuilder uniqueQuery = new StringBuilder();
         for (SearchableField searchableField : fields) {
             // we shouldn't include field that have null / empty value in the query
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(this.getClass().getSimpleName(), "Evaluating: '" + searchableField.getExpression() + "' ...");
+            }
+
             Object valueObject = JsonPath.read(object, searchableField.getExpression());
             if (valueObject != null) {
                 String value = valueObject.toString();
@@ -199,24 +204,27 @@ public class DefaultIndexer implements Indexer {
 
                 if (searchableField.isUnique()) {
                     uniqueExists = true;
-                    if (!StringUtil.isBlank(uniqueQuery.toString()))
+                    if (!StringUtil.isEmpty(uniqueQuery.toString())) {
                         uniqueQuery.append(" AND ");
+                    }
                     uniqueQuery.append(query);
                 }
 
                 // only create the full query if we haven't found any unique key in the searchable fields.
                 if (!uniqueExists) {
-                    if (!StringUtil.isBlank(fullQuery.toString()))
+                    if (!StringUtil.isEmpty(fullQuery.toString())) {
                         fullQuery.append(" AND ");
+                    }
                     fullQuery.append(query);
                 }
             }
         }
 
-        if (uniqueExists)
+        if (uniqueExists) {
             return uniqueQuery.toString();
-        else
+        } else {
             return fullQuery.toString();
+        }
     }
 
     /**
@@ -266,8 +274,9 @@ public class DefaultIndexer implements Indexer {
         if (searcher != null) {
             TopDocs docs = searcher.search(query, DEFAULT_MAX_DOCUMENTS);
             ScoreDoc[] hits = docs.scoreDocs;
-            for (ScoreDoc hit : hits)
+            for (ScoreDoc hit : hits) {
                 documents.add(searcher.doc(hit.doc));
+            }
         }
         return documents;
     }
@@ -283,28 +292,36 @@ public class DefaultIndexer implements Indexer {
     private void writeObject(final Object jsonObject, final Resource resource, final IndexWriter writer)
             throws IOException {
 
-        String checksum = DigestUtil.getSHA1Checksum(jsonObject.toString());
-
         Document document = new Document();
         document.add(new Field(DEFAULT_FIELD_JSON, jsonObject.toString(), Field.Store.YES, Field.Index.NO));
-        document.add(new Field(DEFAULT_FIELD_CHECKSUM, checksum, Field.Store.NO,
-                Field.Index.ANALYZED_NO_NORMS));
-        document.add(new Field(DEFAULT_FIELD_CLASS, resource.getResourceObject().getName(), Field.Store.NO,
-                Field.Index.ANALYZED_NO_NORMS));
+        document.add(new Field(DEFAULT_FIELD_CLASS, resource.getSearchable().getName(), Field.Store.NO,
+                Field.Index.ANALYZED));
         document.add(new Field(DEFAULT_FIELD_RESOURCE, resource.getName(), Field.Store.YES,
-                Field.Index.ANALYZED_NO_NORMS));
+                Field.Index.ANALYZED));
 
+        /*
+         * TODO: a better way to write this to lucene probably using the algorithm.
+         * Approach:
+         * - Get the algorithm object.
+         * - Pass the jsonObject to the algorithm object to create the actual object.
+         * - Iterate over each property of the class (using bean utils?) and add each of them to the document.
+         */
         for (SearchableField searchableField : resource.getSearchableFields()) {
             Object valueObject = JsonPath.read(jsonObject, searchableField.getExpression());
             String value = StringUtil.EMPTY;
-            // TODO: need a better way to handle this value
-            if (valueObject != null)
-                value = valueObject.toString();
-            document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.ANALYZED_NO_NORMS));
+            if (valueObject != null) {
+                value = StringUtil.lowerCase(valueObject.toString());
+            }
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(this.getClass().getSimpleName(),
+                        "Adding field: '" + searchableField.getExpression() + "' with value: " + value);
+            }
+            document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.ANALYZED));
         }
 
-        if (getLogger().isDebugEnabled())
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug(this.getClass().getSimpleName(), "Writing document: " + document);
+        }
 
         writer.addDocument(document);
     }
@@ -325,16 +342,18 @@ public class DefaultIndexer implements Indexer {
                 createResourceQuery(resource)
                         + " AND (" + createObjectQuery(jsonObject, resource.getSearchableFields()) + ")";
 
-        if (getLogger().isDebugEnabled())
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug(this.getClass().getSimpleName(), "Query deleteObject(): " + queryString);
+        }
 
         Query query = parser.parse(queryString);
         List<Document> documents = findDocuments(query);
         // only delete object if we can uniquely identify the object
-        if (documents.size() == 1)
+        if (documents.size() == 1) {
             indexWriter.deleteDocuments(query);
-        else if (documents.size() > 1)
+        } else if (documents.size() > 1) {
             throw new IOException("Unable to uniquely identify an object using the json object in the repository.");
+        }
     }
 
     /**
@@ -363,8 +382,9 @@ public class DefaultIndexer implements Indexer {
         Object jsonObject = JsonPath.read(json, resource.getRootNode());
         if (jsonObject instanceof JSONArray) {
             JSONArray array = (JSONArray) jsonObject;
-            for (Object element : array)
+            for (Object element : array) {
                 updateObject(element, resource, getIndexWriter());
+            }
         } else if (jsonObject instanceof JSONObject) {
             updateObject(jsonObject, resource, getIndexWriter());
         }
@@ -375,17 +395,20 @@ public class DefaultIndexer implements Indexer {
         T object = null;
 
         String queryString = createClassQuery(clazz);
-        if (!StringUtil.isEmpty(key))
+        if (!StringUtil.isEmpty(key)) {
             queryString = queryString + " AND " + key;
+        }
 
-        if (getLogger().isDebugEnabled())
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug(this.getClass().getSimpleName(), "Query getObject(String, Class): " + queryString);
+        }
 
         Query query = parser.parse(queryString);
         List<Document> documents = findDocuments(query);
 
-        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1)
+        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1) {
             throw new IOException("Unable to uniquely identify an object using key: '" + key + "' in the repository.");
+        }
 
         for (Document document : documents) {
             String resourceName = document.get(DEFAULT_FIELD_RESOURCE);
@@ -402,17 +425,20 @@ public class DefaultIndexer implements Indexer {
         Searchable object = null;
 
         String queryString = createResourceQuery(resource);
-        if (!StringUtil.isEmpty(key))
+        if (!StringUtil.isEmpty(key)) {
             queryString = queryString + " AND (" + key + ")";
+        }
 
-        if (getLogger().isDebugEnabled())
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug(this.getClass().getSimpleName(), "Query getObject(String,  Resource): " + queryString);
+        }
 
         Query query = parser.parse(queryString);
         List<Document> documents = findDocuments(query);
 
-        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1)
+        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1) {
             throw new IOException("Unable to uniquely identify an object using key: '" + key + "' in the repository.");
+        }
 
         for (Document document : documents) {
             String json = document.get(DEFAULT_FIELD_JSON);
@@ -452,11 +478,13 @@ public class DefaultIndexer implements Indexer {
         List<T> objects = new ArrayList<T>();
 
         String queryString = createClassQuery(clazz);
-        if (!StringUtil.isEmpty(searchString))
+        if (!StringUtil.isEmpty(searchString)) {
             queryString = queryString + " AND (" + searchString + ")";
+        }
 
-        if (getLogger().isDebugEnabled())
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug(this.getClass().getSimpleName(), "Query getObjects(String, Class): " + queryString);
+        }
 
         Query query = parser.parse(queryString);
         List<Document> documents = findDocuments(query);
@@ -479,11 +507,13 @@ public class DefaultIndexer implements Indexer {
         // - add checksum field to the searchable object
         // - add checksum value on the object from the algorithm
         String queryString = createResourceQuery(resource);
-        if (!StringUtil.isEmpty(searchString))
+        if (!StringUtil.isEmpty(searchString)) {
             queryString = queryString + " AND (" + searchString + ")";
+        }
 
-        if (getLogger().isDebugEnabled())
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug(this.getClass().getSimpleName(), "Query getObjects(String, Resource): " + queryString);
+        }
 
         Query query = parser.parse(queryString);
         List<Document> documents = findDocuments(query);
@@ -497,23 +527,9 @@ public class DefaultIndexer implements Indexer {
     @Override
     public Searchable deleteObject(final Searchable object, final Resource resource)
             throws ParseException, IOException {
-        // TODO: if the checksum is not available, we need to fallback to all properties query to find the document.
-        String checksum = object.getChecksum();
-        String queryString = createResourceQuery(resource);
-        if (!StringUtil.isEmpty(checksum))
-            queryString = queryString + " AND " + createQuery(DEFAULT_FIELD_CHECKSUM, checksum);
-
-        if (getLogger().isDebugEnabled())
-            getLogger().debug(this.getClass().getSimpleName(), "Query deleteObject(): " + queryString);
-
-        Query query = parser.parse(queryString);
-        List<Document> documents = findDocuments(query);
-        // only delete object if we can uniquely identify the object
-        if (documents.size() == 1)
-            getIndexWriter().deleteDocuments(query);
-        else if (documents.size() > 1)
-            throw new IOException("Unable to uniquely identify an object using the json object in the repository.");
-
+        String jsonString = resource.serialize(object);
+        Object jsonObject = JsonPath.read(jsonString, "$");
+        deleteObject(jsonObject, resource, getIndexWriter());
         commit();
         return object;
     }

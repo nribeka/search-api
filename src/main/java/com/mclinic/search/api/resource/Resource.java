@@ -125,7 +125,7 @@ public interface Resource {
      *
      * @return the class for which this resource applicable to.
      */
-    Class getResourceObject();
+    Class getSearchable();
 
     /**
      * Get class which will perform the serialization and de-serialization process from String representation to the

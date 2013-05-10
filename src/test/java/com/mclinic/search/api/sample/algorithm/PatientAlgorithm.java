@@ -21,10 +21,9 @@ import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.model.serialization.BaseAlgorithm;
 import com.mclinic.search.api.sample.domain.Patient;
 import com.mclinic.search.api.util.DigestUtil;
-import com.mclinic.search.api.util.StringUtil;
+import net.minidev.json.JSONObject;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 
 public class PatientAlgorithm  extends BaseAlgorithm {
 
@@ -38,23 +37,26 @@ public class PatientAlgorithm  extends BaseAlgorithm {
     public Searchable deserialize(final String serialized) throws IOException {
         Patient patient = new Patient();
 
-        String checksum = DigestUtil.getSHA1Checksum(serialized);
-        patient.setChecksum(checksum);
-
         // get the full json object representation and then pass this around to the next JsonPath.read()
         // this should minimize the time for the subsequent read() call
         Object jsonObject = JsonPath.read(serialized, "$");
 
-        String uuid = JsonPath.read(jsonObject, "$.uuid");
+        String uuid = JsonPath.read(jsonObject, "$['uuid']");
         patient.setUuid(uuid);
 
-        String name = JsonPath.read(jsonObject, "$.person.display");
-        patient.setName(name);
+        String givenName = JsonPath.read(jsonObject, "$['personName.givenName']");
+        patient.setGivenName(givenName);
 
-        String identifier = JsonPath.read(jsonObject, "$.identifiers[0].display");
+        String middleName = JsonPath.read(jsonObject, "$['personName.middleName']");
+        patient.setMiddleName(middleName);
+
+        String familyName = JsonPath.read(jsonObject, "$['personName.familyName']");
+        patient.setFamilyName(familyName);
+
+        String identifier = JsonPath.read(jsonObject, "$['patientIdentifier.identifier']");
         patient.setIdentifier(identifier);
 
-        String gender = JsonPath.read(jsonObject, "$.person.gender");
+        String gender = JsonPath.read(jsonObject, "$['gender']");
         patient.setGender(gender);
 
         return patient;
@@ -69,6 +71,13 @@ public class PatientAlgorithm  extends BaseAlgorithm {
     @Override
     public String serialize(final Searchable object) throws IOException {
         Patient patient = (Patient) object;
-        return patient.toString();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("uuid", patient.getUuid());
+        jsonObject.put("personName.givenName", patient.getGivenName());
+        jsonObject.put("personName.middleName", patient.getMiddleName());
+        jsonObject.put("personName.familyName", patient.getFamilyName());
+        jsonObject.put("patientIdentifier.identifier", patient.getIdentifier());
+        jsonObject.put("gender", patient.getGender());
+        return jsonObject.toJSONString();
     }
 }

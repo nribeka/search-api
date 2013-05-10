@@ -24,8 +24,6 @@ import org.apache.lucene.search.Query;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public interface Indexer extends Loggable {

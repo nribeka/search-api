@@ -21,14 +21,13 @@ import com.google.inject.Singleton;
 import com.mclinic.search.api.exception.ServiceException;
 import com.mclinic.search.api.internal.file.ResourceFileFilter;
 import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.resolver.Resolver;
+import com.mclinic.search.api.model.serialization.Algorithm;
 import com.mclinic.search.api.registry.DefaultRegistry;
 import com.mclinic.search.api.registry.Registry;
-import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.ObjectResource;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.resource.ResourceConstants;
-import com.mclinic.search.api.model.serialization.Algorithm;
-import com.mclinic.search.api.service.RestAssuredService;
 import com.mclinic.search.api.util.ResourceUtil;
 import com.mclinic.search.api.util.StringUtil;
 
@@ -85,7 +84,7 @@ public final class ServiceContext {
      * @throws ServiceException when name or resource is invalid (null).
      */
     protected void registerResource(final String name, final Resource resource) throws ServiceException {
-        if (StringUtil.isBlank(name))
+        if (StringUtil.isEmpty(name))
             throw new ServiceException("Trying to register resource without handle.");
 
         if (resource == null)
@@ -154,7 +153,7 @@ public final class ServiceContext {
         String resourceName = properties.getEntryValue(ResourceConstants.RESOURCE_NAME);
 
         String rootNode = properties.getEntryValue(ResourceConstants.RESOURCE_ROOT_NODE);
-        if (StringUtil.isBlank(rootNode))
+        if (StringUtil.isEmpty(rootNode))
             throw new ServiceException("Unable to create resource because of missing root node definition.");
 
         String objectClassKey = properties.getEntryValue(ResourceConstants.RESOURCE_SEARCHABLE);

@@ -1,83 +1,10 @@
 {
-    "voided": false,
-    "resourceVersion": "1.8",
-    "links": [
-        {
-            "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dd7fc05a-1691-11df-97a5-7038c432aabf",
-            "rel": "self"
-        },
-        {
-            "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dd7fc05a-1691-11df-97a5-7038c432aabf?v=full",
-            "rel": "full"
-        }
-    ],
+    "gender": "M",
+    "birthdate": "1963-01-23T00:00:00.000-0500",
+    "personName.familyName": "Paul",
+    "patientIdentifier.identifierType.name": "Old AMPATH Medical Record Number",
     "uuid": "dd7fc05a-1691-11df-97a5-7038c432aabf",
-    "identifiers": [
-        {
-            "links": [
-                {
-                    "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/dd7fc05a-1691-11df-97a5-7038c432aabf/identifier/dd0c8c79-1691-11df-97a5-7038c432aabf",
-                    "rel": "self"
-                }
-            ],
-            "uuid": "dd0c8c79-1691-11df-97a5-7038c432aabf",
-            "display": "Old AMPATH Medical Record Number = 3645KT-3"
-        }
-    ],
-    "display": "3645KT-3 - Testarius Kungu Paul",
-    "person": {
-        "voided": false,
-        "resourceVersion": "1.8",
-        "age": 50,
-        "links": [
-            {
-                "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/null",
-                "rel": "self"
-            },
-            {
-                "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/null?v=full",
-                "rel": "full"
-            }
-        ],
-        "dead": false,
-        "uuid": null,
-        "display": "Testarius Kungu Paul",
-        "attributes": [
-            {
-                "links": [
-                    {
-                        "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dd7fc05a-1691-11df-97a5-7038c432aabf/attribute/de408be6-1691-11df-97a5-7038c432aabf",
-                        "rel": "self"
-                    }
-                ],
-                "uuid": "de408be6-1691-11df-97a5-7038c432aabf",
-                "display": "Mother's Name = Vivan"
-            }
-        ],
-        "causeOfDeath": null,
-        "gender": "M",
-        "preferredName": {
-            "links": [
-                {
-                    "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dd7fc05a-1691-11df-97a5-7038c432aabf/name/dea78c39-1691-11df-97a5-7038c432aabf",
-                    "rel": "self"
-                }
-            ],
-            "uuid": "dea78c39-1691-11df-97a5-7038c432aabf",
-            "display": "Testarius Kungu Paul"
-        },
-        "birthdateEstimated": false,
-        "birthdate": "1963-01-23T00:00:00.000-0500",
-        "preferredAddress": {
-            "links": [
-                {
-                    "uri": "http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/person/dd7fc05a-1691-11df-97a5-7038c432aabf/address/dddd5c96-1691-11df-97a5-7038c432aabf",
-                    "rel": "self"
-                }
-            ],
-            "uuid": "dddd5c96-1691-11df-97a5-7038c432aabf",
-            "display": null
-        },
-        "deathDate": null
-    }
+    "patientIdentifier.identifier": "3645KT-3",
+    "personName.middleName": "Kungu",
+    "personName.givenName": "Testarius"
 }

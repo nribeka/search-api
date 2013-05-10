@@ -17,7 +17,6 @@
 package com.mclinic.search.api.sample.resolver;
 
 import com.mclinic.search.api.model.resolver.BaseResolver;
-import com.mclinic.search.api.model.resolver.Resolver;
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 import java.net.URLConnection;

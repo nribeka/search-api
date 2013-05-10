@@ -16,11 +16,13 @@
 
 package com.mclinic.search.api.module;
 
-import java.io.File;
-
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.name.Names;
 import com.mclinic.search.api.logger.LogLevel;
+import com.mclinic.search.api.logger.Logger;
+
+import java.io.File;
 
 public class JUnitModule extends AbstractModule {
 
