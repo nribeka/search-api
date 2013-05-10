@@ -25,6 +25,7 @@ import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.service.RestAssuredService;
+import com.mclinic.search.api.util.CollectionUtil;
 import com.mclinic.search.api.util.FilenameUtil;
 import com.mclinic.search.api.util.StringUtil;
 import org.apache.lucene.index.Term;
@@ -189,7 +190,6 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * Search for objects with matching <code>filter</code> and <code>clazz</code> type from the local repository.
      * This method will return list of all matching object or empty list if no object match the search query.
      *
-     *
      * @param filters the search filter to limit the number of returned object
      * @param clazz   the expected return type of the object
      * @return list of all object with matching <code>query</code> and <code>clazz</code> or empty list
@@ -198,10 +198,12 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      */
     public <T> List<T> getObjects(final List<Filter> filters, final Class<T> clazz) throws IOException {
         BooleanQuery booleanQuery = new BooleanQuery();
-        for (Filter filter : filters) {
-            String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
-            TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
-            booleanQuery.add(termQuery, BooleanClause.Occur.MUST);
+        if (!CollectionUtil.isEmpty(filters)) {
+            for (Filter filter : filters) {
+                String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
+                TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
+                booleanQuery.add(termQuery, BooleanClause.Occur.MUST);
+            }
         }
         return indexer.getObjects(booleanQuery, clazz);
     }
@@ -209,7 +211,6 @@ public class RestAssuredServiceImpl implements RestAssuredService {
     /**
      * Search for objects with matching <code>filter</code> and <code>resource</code> type from the local repository.
      * This method will return list of all matching object or empty list if no object match the search query.
-     *
      *
      * @param filters  the search filter to limit the number of returned object
      * @param resource the resource descriptor used to register the object
@@ -219,10 +220,12 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      */
     public List<Searchable> getObjects(final List<Filter> filters, final Resource resource) throws IOException {
         BooleanQuery booleanQuery = new BooleanQuery();
-        for (Filter filter : filters) {
-            String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
-            TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
-            booleanQuery.add(termQuery, BooleanClause.Occur.MUST);
+        if (!CollectionUtil.isEmpty(filters)) {
+            for (Filter filter : filters) {
+                String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
+                TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
+                booleanQuery.add(termQuery, BooleanClause.Occur.MUST);
+            }
         }
         return indexer.getObjects(booleanQuery, resource);
     }
