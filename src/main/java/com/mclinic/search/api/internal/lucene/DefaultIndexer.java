@@ -197,11 +197,6 @@ public class DefaultIndexer implements Indexer {
         BooleanQuery fullBooleanQuery = new BooleanQuery();
         BooleanQuery uniqueBooleanQuery = new BooleanQuery();
         for (SearchableField searchableField : fields) {
-            // we shouldn't include field that have null / empty value in the query
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug(this.getClass().getSimpleName(), "Evaluating: '" + searchableField.getExpression() + "' ...");
-            }
-
             Object valueObject = JsonPath.read(object, searchableField.getExpression());
             if (valueObject != null) {
                 String value = valueObject.toString();
@@ -306,7 +301,7 @@ public class DefaultIndexer implements Indexer {
             }
             if (getLogger().isDebugEnabled()) {
                 getLogger().debug(this.getClass().getSimpleName(),
-                        "Adding field: '" + searchableField.getExpression() + "' with value: " + value);
+                        "Adding field: " + searchableField.getExpression() + " with value: " + value);
             }
             document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.NOT_ANALYZED));
         }
