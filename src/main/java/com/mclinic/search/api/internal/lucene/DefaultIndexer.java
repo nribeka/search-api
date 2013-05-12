@@ -447,7 +447,14 @@ public class DefaultIndexer implements Indexer {
 
         BooleanQuery booleanQuery = new BooleanQuery();
         booleanQuery.add(createClassQuery(clazz), BooleanClause.Occur.MUST);
-        booleanQuery.add(query, BooleanClause.Occur.MUST);
+        if (query != null) {
+            booleanQuery.add(query, BooleanClause.Occur.MUST);
+        }
+
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObject(String, Class): " + booleanQuery.toString());
+        }
 
         List<Document> documents = findDocuments(query);
         for (Document document : documents) {
@@ -465,7 +472,14 @@ public class DefaultIndexer implements Indexer {
 
         BooleanQuery booleanQuery = new BooleanQuery();
         booleanQuery.add(createResourceQuery(resource), BooleanClause.Occur.MUST);
-        booleanQuery.add(query, BooleanClause.Occur.MUST);
+        if (query != null) {
+            booleanQuery.add(query, BooleanClause.Occur.MUST);
+        }
+
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObject(String, Class): " + booleanQuery.toString());
+        }
 
         List<Document> documents = findDocuments(booleanQuery);
         for (Document document : documents) {

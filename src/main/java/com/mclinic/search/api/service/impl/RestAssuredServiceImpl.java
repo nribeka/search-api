@@ -197,8 +197,9 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @should return empty list when no object match the search query and class
      */
     public <T> List<T> getObjects(final List<Filter> filters, final Class<T> clazz) throws IOException {
-        BooleanQuery booleanQuery = new BooleanQuery();
+        BooleanQuery booleanQuery = null;
         if (!CollectionUtil.isEmpty(filters)) {
+            booleanQuery = new BooleanQuery();
             for (Filter filter : filters) {
                 String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
                 TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
@@ -219,8 +220,9 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @should return empty list when no object match the search query and resource
      */
     public List<Searchable> getObjects(final List<Filter> filters, final Resource resource) throws IOException {
-        BooleanQuery booleanQuery = new BooleanQuery();
+        BooleanQuery booleanQuery = null;
         if (!CollectionUtil.isEmpty(filters)) {
+            booleanQuery = new BooleanQuery();
             for (Filter filter : filters) {
                 String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
                 TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
