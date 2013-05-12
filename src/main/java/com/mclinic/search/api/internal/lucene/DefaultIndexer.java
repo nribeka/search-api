@@ -456,7 +456,7 @@ public class DefaultIndexer implements Indexer {
                     "Query getObject(String, Class): " + booleanQuery.toString());
         }
 
-        List<Document> documents = findDocuments(query);
+        List<Document> documents = findDocuments(booleanQuery);
         for (Document document : documents) {
             String resourceName = document.get(DEFAULT_FIELD_RESOURCE);
             Resource resource = getResourceRegistry().getEntryValue(resourceName);
