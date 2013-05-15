@@ -22,19 +22,4 @@ import com.mclinic.search.api.Loggable;
  * Top level object for the search api. All object must implement this interface.
  */
 public interface Searchable extends Loggable {
-
-    /**
-     * Get the checksum for the searchable object.
-     *
-     * @return the searchable object's checksum.
-     */
-    String getChecksum();
-
-    /**
-     * Set the checksum for the searchable object.
-     *
-     * @param checksum the checksum for the searchable object.
-     */
-    void setChecksum(final String checksum);
-
 }

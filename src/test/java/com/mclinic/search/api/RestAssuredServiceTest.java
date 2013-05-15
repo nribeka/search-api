@@ -49,7 +49,9 @@ public class RestAssuredServiceTest {
 
     private RestAssuredService service;
 
-    private static String patientName;
+    private static String patientGivenName;
+
+    private static String patientFamilyName;
 
     private static String patientUuid;
 
@@ -62,8 +64,9 @@ public class RestAssuredServiceTest {
     @BeforeClass
     public static void prepareData() throws Exception {
         // we can read this values from the configuration document but it will take more coding haha ...
-        String patientUuidPath = "$.uuid";
-        String patientNamePath = "$.person.display";
+        String patientUuidPath = "$['uuid']";
+        String patientGivenNamePath = "$['personName.givenName']";
+        String patientFamilyNamePath = "$['personName.familyName']";
 
         URL corpusUri = RestAssuredServiceTest.class.getResource(CORPUS_DIRECTORY);
         File corpusDirectory = new File(corpusUri.getPath());
@@ -71,11 +74,12 @@ public class RestAssuredServiceTest {
             String jsonPayload = StreamUtil.readAsString(new FileReader(new File(corpusDirectory, corpusFile)));
             // read the patient name information :)
             patientUuid = JsonPath.read(jsonPayload, patientUuidPath);
-            patientName = JsonPath.read(jsonPayload, patientNamePath);
+            patientGivenName = JsonPath.read(jsonPayload, patientGivenNamePath);
+            patientFamilyName = JsonPath.read(jsonPayload, patientFamilyNamePath);
         }
 
         Assert.assertNotNull(patientUuid);
-        Assert.assertNotNull(patientName);
+        Assert.assertNotNull(patientGivenName);
     }
 
     @Before
@@ -83,7 +87,7 @@ public class RestAssuredServiceTest {
         Injector injector = Guice.createInjector(new SearchModule(), new JUnitModule());
         context = injector.getInstance(ServiceContext.class);
 
-        context.registerObject(new Patient());
+        context.registerSearchable(new Patient());
         context.registerResolver(new PatientResolver());
         context.registerAlgorithm(new PatientAlgorithm());
 
@@ -159,13 +163,14 @@ public class RestAssuredServiceTest {
     @Test
     public void loadObjects_shouldLoadObjectFromFilesystemBasedOnTheResourceDescription() throws Exception {
         // search for multiple patients
-        List<Patient> patients = service.getObjects("name:Test*", Patient.class);
+        List<Patient> patients = service.getObjects("givenName:test*", Patient.class);
         Assert.assertNotNull(patients);
         Assert.assertEquals(3, patients.size());
         // search for specific patient using the name
-        Patient patient = service.getObject("name: " + StringUtil.quote(patientName), Patient.class);
-        Assert.assertNotNull(patient);
-        Assert.assertEquals(patientName, patient.getName());
+        patients = service.getObjects("familyName: " + StringUtil.quote(patientFamilyName), Patient.class);
+        Assert.assertNotNull(patients);
+        Assert.assertEquals(patientGivenName, patients.get(0).getGivenName());
+        Assert.assertEquals(patientFamilyName, patients.get(0).getFamilyName());
     }
 
     /**
@@ -175,7 +180,7 @@ public class RestAssuredServiceTest {
     @Test
     public void getObject_shouldReturnObjectWithMatchingKeyAndType() throws Exception {
         // search for specific patient using uuid
-        Patient patient = service.getObject(StringUtil.quote(patientUuid), Patient.class);
+        Patient patient = service.getObject(patientUuid, Patient.class);
         Assert.assertNotNull(patient);
         Assert.assertEquals(patientUuid, patient.getUuid());
     }
@@ -192,23 +197,13 @@ public class RestAssuredServiceTest {
     }
 
     /**
-     * @verifies throw IOException if the key and class unable to return unique object
-     * @see RestAssuredService#getObject(String, Class)
-     */
-    @Test(expected = IOException.class)
-    public void getObject_shouldThrowIOExceptionIfTheKeyAndClassUnableToReturnUniqueObject() throws Exception {
-        Patient patient = service.getObject("name: T*", Patient.class);
-        Assert.assertNull(patient);
-    }
-
-    /**
      * @verifies return object with matching key
      * @see RestAssuredService#getObject(String, com.mclinic.search.api.resource.Resource)
      */
     @Test
     public void getObject_shouldReturnObjectWithMatchingKey() throws Exception {
         Resource resource = context.getResource(PATIENT_RESOURCE);
-        Patient patient = (Patient) service.getObject(StringUtil.quote(patientUuid), resource);
+        Patient patient = (Patient) service.getObject(patientUuid, resource);
         Assert.assertNotNull(patient);
         Assert.assertEquals(patientUuid, patient.getUuid());
     }
@@ -225,25 +220,27 @@ public class RestAssuredServiceTest {
     }
 
     /**
-     * @verifies throw IOException if the key and resource unable to return unique object
-     * @see RestAssuredService#getObject(String, com.mclinic.search.api.resource.Resource)
-     */
-    @Test(expected = IOException.class)
-    public void getObject_shouldThrowIOExceptionIfTheKeyAndResourceUnableToReturnUniqueObject() throws Exception {
-        Resource resource = context.getResource(PATIENT_RESOURCE);
-        Patient patient = (Patient) service.getObject("name: T*", resource);
-        Assert.assertNull(patient);
-    }
-
-    /**
      * @verifies return all object matching the search search string and class
      * @see RestAssuredService#getObjects(String, Class)
      */
     @Test
     public void getObjects_shouldReturnAllObjectMatchingTheSearchSearchStringAndClass() throws Exception {
-        List<Patient> patients = service.getObjects("name: T*", Patient.class);
+        List<Patient> patients;
+
+        patients = service.getObjects("givenName: T*", Patient.class);
         Assert.assertNotNull(patients);
-        Assert.assertTrue(patients.size() > 0);
+        Assert.assertEquals(3, patients.size());
+
+//        String baseUri = StringUtil.sanitize("http://149.166.10.181:8081/openmrs-standalone/ws/rest/v1/patient/");
+//        String query = "uri:" + StringUtil.quote(baseUri);
+//        patients = service.getObjects(query, Patient.class);
+//        Assert.assertNotNull(patients);
+//        Assert.assertEquals(3, patients.size());
+//
+//        String patientQuery = "uri:" + StringUtil.quote(baseUri + patientUuid);
+//        patients = service.getObjects(patientQuery, Patient.class);
+//        Assert.assertNotNull(patients);
+//        Assert.assertEquals(1, patients.size());
     }
 
     /**
@@ -252,9 +249,10 @@ public class RestAssuredServiceTest {
      */
     @Test
     public void getObjects_shouldReturnEmptyListWhenNoObjectMatchTheSearchStringAndClass() throws Exception {
-        List<Patient> patients = service.getObjects("name: Zz*", Patient.class);
+        List<Patient> patients;
+        patients = service.getObjects("name: Zz*", Patient.class);
         Assert.assertNotNull(patients);
-        Assert.assertTrue(patients.size() == 0);
+        Assert.assertEquals(0, patients.size());
     }
 
     /**
@@ -264,9 +262,9 @@ public class RestAssuredServiceTest {
     @Test
     public void getObjects_shouldReturnAllObjectMatchingTheSearchSearchStringAndResource() throws Exception {
         Resource resource = context.getResource(PATIENT_RESOURCE);
-        List<Searchable> patients = service.getObjects("name: T*", resource);
+        List<Searchable> patients = service.getObjects("givenName: T*", resource);
         Assert.assertNotNull(patients);
-        Assert.assertTrue(patients.size() > 0);
+        Assert.assertEquals(3, patients.size());
         for (Object patient : patients) {
             Assert.assertNotNull(patient);
             Assert.assertEquals(Patient.class, patient.getClass());
@@ -282,7 +280,7 @@ public class RestAssuredServiceTest {
         Resource resource = context.getResource(PATIENT_RESOURCE);
         List<Searchable> patients = service.getObjects("name: Zz*", resource);
         Assert.assertNotNull(patients);
-        Assert.assertTrue(patients.size() == 0);
+        Assert.assertEquals(0, patients.size());
     }
 
     /**
@@ -291,7 +289,7 @@ public class RestAssuredServiceTest {
      */
     @Test
     public void invalidate_shouldRemoveAnObjectFromTheInternalIndexSystem() throws Exception {
-        Patient patient = service.getObject(StringUtil.quote(patientUuid), Patient.class);
+        Patient patient = service.getObject(patientUuid, Patient.class);
         Assert.assertNotNull(patient);
         Assert.assertEquals(patientUuid, patient.getUuid());
 
@@ -300,7 +298,7 @@ public class RestAssuredServiceTest {
         Assert.assertNotNull(deletedPatient);
         Assert.assertEquals(patientUuid, deletedPatient.getUuid());
 
-        Patient afterDeletionPatient = service.getObject(StringUtil.quote(patientUuid), Patient.class);
+        Patient afterDeletionPatient = service.getObject(patientUuid, Patient.class);
         Assert.assertNull(afterDeletionPatient);
     }
 }

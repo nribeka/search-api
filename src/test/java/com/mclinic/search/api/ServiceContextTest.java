@@ -21,27 +21,18 @@ import com.google.inject.Injector;
 import com.mclinic.search.api.context.ServiceContext;
 import com.mclinic.search.api.exception.ServiceException;
 import com.mclinic.search.api.internal.file.ResourceFileFilter;
-import com.mclinic.search.api.module.JUnitModule;
 import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.resolver.Resolver;
+import com.mclinic.search.api.model.serialization.Algorithm;
+import com.mclinic.search.api.module.JUnitModule;
 import com.mclinic.search.api.module.SearchModule;
 import com.mclinic.search.api.registry.Registry;
-import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.resource.ResourceConstants;
 import com.mclinic.search.api.resource.SearchableField;
-import com.mclinic.search.api.sample.algorithm.CohortAlgorithm;
-import com.mclinic.search.api.sample.algorithm.CohortMemberAlgorithm;
-import com.mclinic.search.api.sample.algorithm.ObservationAlgorithm;
 import com.mclinic.search.api.sample.algorithm.PatientAlgorithm;
-import com.mclinic.search.api.sample.domain.Cohort;
-import com.mclinic.search.api.sample.domain.CohortMember;
-import com.mclinic.search.api.sample.domain.Observation;
 import com.mclinic.search.api.sample.domain.Patient;
-import com.mclinic.search.api.sample.resolver.CohortMemberResolver;
-import com.mclinic.search.api.sample.resolver.CohortResolver;
-import com.mclinic.search.api.sample.resolver.ObservationResolver;
 import com.mclinic.search.api.sample.resolver.PatientResolver;
-import com.mclinic.search.api.model.serialization.Algorithm;
 import com.mclinic.search.api.util.ResourceUtil;
 import com.mclinic.search.api.util.StringUtil;
 import org.junit.Assert;
@@ -62,25 +53,12 @@ public class ServiceContextTest {
     public void prepare() throws Exception {
         Injector injector = Guice.createInjector(new SearchModule(), new JUnitModule());
         serviceContext = injector.getInstance(ServiceContext.class);
-        // initialize context object with additional parameters from the junit module
-
         // register algorithms classes for the testing
         serviceContext.registerAlgorithm(new PatientAlgorithm());
-        serviceContext.registerAlgorithm(new CohortAlgorithm());
-        serviceContext.registerAlgorithm(new CohortMemberAlgorithm());
-        serviceContext.registerAlgorithm(new ObservationAlgorithm());
-
         // register resolver classes for the testing
         serviceContext.registerResolver(new PatientResolver());
-        serviceContext.registerResolver(new CohortResolver());
-        serviceContext.registerResolver(new CohortMemberResolver());
-        serviceContext.registerResolver(new ObservationResolver());
-
         // register domain object classes for the testing
-        serviceContext.registerObject(new Patient());
-        serviceContext.registerObject(new Cohort());
-        serviceContext.registerObject(new CohortMember());
-        serviceContext.registerObject(new Observation());
+        serviceContext.registerSearchable(new Patient());
     }
 
     /**
@@ -256,7 +234,7 @@ public class ServiceContextTest {
         serviceContext.registerResources(resourceFile);
 
         int resourceCounter = serviceContext.getResources().size();
-        Resource registeredResource = serviceContext.getResource("Cohort Member Resource");
+        Resource registeredResource = serviceContext.getResource("Patient Resource");
         Resource removedResource = serviceContext.removeResource(registeredResource);
         Assert.assertEquals(registeredResource, removedResource);
 
@@ -265,29 +243,15 @@ public class ServiceContextTest {
 
     /**
      * @verifies register domain object using the class name.
-     * @see ServiceContext#registerObject(com.mclinic.search.api.model.object.Searchable)
+     * @see ServiceContext#registerSearchable(com.mclinic.search.api.model.object.Searchable)
      */
     @Test
     public void registerObject_shouldRegisterDomainObjectUsingTheClassName() throws Exception {
-        Searchable clazz = serviceContext.getObject(Patient.class.getName());
+        Searchable clazz = serviceContext.getSearchable(Patient.class.getName());
         Assert.assertNotNull(clazz);
         Assert.assertEquals(Patient.class.getName(), clazz.getClass().getName());
-        serviceContext.removeObject(clazz);
-        clazz = serviceContext.getObject(Patient.class.getName());
-        Assert.assertNull(clazz);
-
-        clazz = serviceContext.getObject(Observation.class.getName());
-        Assert.assertNotNull(clazz);
-        Assert.assertEquals(Observation.class.getName(), clazz.getClass().getName());
-        serviceContext.removeObject(clazz);
-        clazz = serviceContext.getObject(Observation.class.getName());
-        Assert.assertNull(clazz);
-
-        clazz = serviceContext.getObject(Cohort.class.getName());
-        Assert.assertNotNull(clazz);
-        Assert.assertEquals(Cohort.class.getName(), clazz.getClass().getName());
-        serviceContext.removeObject(clazz);
-        clazz = serviceContext.getObject(Cohort.class.getName());
+        serviceContext.removeSearchable(clazz);
+        clazz = serviceContext.getSearchable(Patient.class.getName());
         Assert.assertNull(clazz);
     }
 
@@ -300,10 +264,6 @@ public class ServiceContextTest {
         Algorithm algorithm = serviceContext.getAlgorithm(PatientAlgorithm.class.getName());
         Assert.assertNotNull(algorithm);
         Assert.assertEquals(PatientAlgorithm.class.getName(), algorithm.getClass().getName());
-
-        algorithm = serviceContext.getAlgorithm(CohortMemberAlgorithm.class.getName());
-        Assert.assertNotNull(algorithm);
-        Assert.assertEquals(CohortMemberAlgorithm.class.getName(), algorithm.getClass().getName());
     }
 
     /**
@@ -315,9 +275,5 @@ public class ServiceContextTest {
         Resolver resolver = serviceContext.getResolver(PatientResolver.class.getName());
         Assert.assertNotNull(resolver);
         Assert.assertEquals(PatientResolver.class.getName(), resolver.getClass().getName());
-
-        resolver = serviceContext.getResolver(CohortMemberResolver.class.getName());
-        Assert.assertNotNull(resolver);
-        Assert.assertEquals(CohortMemberResolver.class.getName(), resolver.getClass().getName());
     }
 }

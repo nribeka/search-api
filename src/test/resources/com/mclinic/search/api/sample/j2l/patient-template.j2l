@@ -6,6 +6,8 @@ algorithm.class=com.mclinic.search.api.sample.algorithm.PatientAlgorithm
 resolver.class=com.mclinic.search.api.sample.resolver.PatientResolver
 field.unique=uuid
 # Mapping
-uuid=$.uuid
-identifier=$.identifiers[0].display
-name=$.person.display
+uuid=$['uuid']
+identifier=$['patientIdentifier.identifier']
+givenName=$['personName.givenName']
+middleName=$['personName.middleName']
+familyName=$['personName.familyName']

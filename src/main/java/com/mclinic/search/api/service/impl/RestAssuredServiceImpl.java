@@ -18,15 +18,21 @@ package com.mclinic.search.api.service.impl;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.mclinic.search.api.filter.Filter;
 import com.mclinic.search.api.internal.lucene.Indexer;
 import com.mclinic.search.api.logger.Logger;
 import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.service.RestAssuredService;
+import com.mclinic.search.api.util.CollectionUtil;
 import com.mclinic.search.api.util.FilenameUtil;
+import com.mclinic.search.api.util.StringUtil;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.Query;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.TermQuery;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -181,33 +187,49 @@ public class RestAssuredServiceImpl implements RestAssuredService {
     }
 
     /**
-     * Search for objects with matching <code>query</code></code> and <code>clazz</code> type from the local repository.
+     * Search for objects with matching <code>filter</code> and <code>clazz</code> type from the local repository.
      * This method will return list of all matching object or empty list if no object match the search query.
      *
-     * @param query the search query to limit the number of returned object
-     * @param clazz the expected return type of the object
+     * @param filters the search filter to limit the number of returned object
+     * @param clazz   the expected return type of the object
      * @return list of all object with matching <code>query</code> and <code>clazz</code> or empty list
      * @should return all object matching the search query string and class
      * @should return empty list when no object match the search query and class
      */
-    @Override
-    public <T> List<T> getObjects(final Query query, final Class<T> clazz) throws IOException {
-        return indexer.getObjects(query, clazz);
+    public <T> List<T> getObjects(final List<Filter> filters, final Class<T> clazz) throws IOException {
+        BooleanQuery booleanQuery = null;
+        if (!CollectionUtil.isEmpty(filters)) {
+            booleanQuery = new BooleanQuery();
+            for (Filter filter : filters) {
+                String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
+                TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
+                booleanQuery.add(termQuery, BooleanClause.Occur.MUST);
+            }
+        }
+        return indexer.getObjects(booleanQuery, clazz);
     }
 
     /**
-     * Search for objects with matching <code>query</code> and <code>resource</code> type from the local repository.
+     * Search for objects with matching <code>filter</code> and <code>resource</code> type from the local repository.
      * This method will return list of all matching object or empty list if no object match the search query.
      *
-     * @param query    the search query to limit the number of returned object
+     * @param filters  the search filter to limit the number of returned object
      * @param resource the resource descriptor used to register the object
      * @return list of all object with matching <code>query</code> and <code>resource</code> or empty list
      * @should return all object matching the search query and resource
      * @should return empty list when no object match the search query and resource
      */
-    @Override
-    public List<Searchable> getObjects(final Query query, final Resource resource) throws IOException {
-        return indexer.getObjects(query, resource);
+    public List<Searchable> getObjects(final List<Filter> filters, final Resource resource) throws IOException {
+        BooleanQuery booleanQuery = null;
+        if (!CollectionUtil.isEmpty(filters)) {
+            booleanQuery = new BooleanQuery();
+            for (Filter filter : filters) {
+                String sanitizedValue = StringUtil.sanitize(filter.getFieldValue());
+                TermQuery termQuery = new TermQuery(new Term(filter.getFieldName(), sanitizedValue));
+                booleanQuery.add(termQuery, BooleanClause.Occur.MUST);
+            }
+        }
+        return indexer.getObjects(booleanQuery, resource);
     }
 
     /**

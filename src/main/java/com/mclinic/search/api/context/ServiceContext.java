@@ -21,20 +21,21 @@ import com.google.inject.Singleton;
 import com.mclinic.search.api.exception.ServiceException;
 import com.mclinic.search.api.internal.file.ResourceFileFilter;
 import com.mclinic.search.api.model.object.Searchable;
+import com.mclinic.search.api.model.resolver.Resolver;
+import com.mclinic.search.api.model.serialization.Algorithm;
 import com.mclinic.search.api.registry.DefaultRegistry;
 import com.mclinic.search.api.registry.Registry;
-import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.ObjectResource;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.resource.ResourceConstants;
-import com.mclinic.search.api.model.serialization.Algorithm;
-import com.mclinic.search.api.service.RestAssuredService;
 import com.mclinic.search.api.util.ResourceUtil;
 import com.mclinic.search.api.util.StringUtil;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,9 +53,6 @@ public final class ServiceContext {
 
     @Inject
     private Registry<String, Resource> resourceRegistry;
-
-    @Inject
-    private RestAssuredService service;
 
     protected ServiceContext() {
         objectRegistry = new DefaultRegistry<String, Searchable>();
@@ -78,10 +76,6 @@ public final class ServiceContext {
         return resourceRegistry;
     }
 
-    public RestAssuredService getService() {
-        return service;
-    }
-
     /**
      * Register a new resource object.
      *
@@ -90,7 +84,7 @@ public final class ServiceContext {
      * @throws ServiceException when name or resource is invalid (null).
      */
     protected void registerResource(final String name, final Resource resource) throws ServiceException {
-        if (StringUtil.isBlank(name))
+        if (StringUtil.isEmpty(name))
             throw new ServiceException("Trying to register resource without handle.");
 
         if (resource == null)
@@ -122,7 +116,7 @@ public final class ServiceContext {
     public void registerResources(final File file) throws IOException, ServiceException {
         FileFilter fileFilter = new ResourceFileFilter();
         if (!file.isDirectory() && fileFilter.accept(file)) {
-            registerResource(createResource(file));
+            registerResource(new FileInputStream(file));
         } else {
             File[] files = file.listFiles(fileFilter);
             if (files != null) {
@@ -133,38 +127,52 @@ public final class ServiceContext {
     }
 
     /**
+     * Read the input stream and then convert it into resource object and register them.
+     *
+     * @param inputStream the input stream to the configuration.
+     * @throws IOException when the parser fail to read the configuration input stream.
+     * @should create valid resource object based on the resource input stream.
+     */
+    public void registerResource(final InputStream inputStream) throws IOException, ServiceException {
+        registerResource(createResource(inputStream));
+    }
+
+    /**
      * Internal method to convert the actual resource file into the resource object.
      *
-     * @param file the file
+     * @param inputStream the input stream to the configuration.
      * @return the resource object
      * @throws IOException when the parser fail to read the configuration file
      */
-    private Resource createResource(final File file) throws IOException, ServiceException {
+    private Resource createResource(final InputStream inputStream) throws IOException, ServiceException {
 
         // TODO: see this gist to prevent re-reading the same resource file if it's already registered
         // https://gist.github.com/3998818
 
-        Registry<String, String> properties = ResourceUtil.readConfiguration(file);
+        Registry<String, String> properties = ResourceUtil.readConfiguration(inputStream);
         String resourceName = properties.getEntryValue(ResourceConstants.RESOURCE_NAME);
 
         String rootNode = properties.getEntryValue(ResourceConstants.RESOURCE_ROOT_NODE);
-        if (StringUtil.isBlank(rootNode))
+        if (StringUtil.isEmpty(rootNode))
             throw new ServiceException("Unable to create resource because of missing root node definition.");
 
         String objectClassKey = properties.getEntryValue(ResourceConstants.RESOURCE_SEARCHABLE);
         Searchable searchable = getObjectRegistry().getEntryValue(objectClassKey);
         if (searchable == null)
-            throw new ServiceException("Unable to create resource because of missing rest assured object.");
+            throw new ServiceException("Unable to create resource because of missing rest assured object. " +
+                    "Expecting object of type: " + objectClassKey);
 
         String algorithmKey = properties.getEntryValue(ResourceConstants.RESOURCE_ALGORITHM_CLASS);
         Algorithm algorithm = getAlgorithmRegistry().getEntryValue(algorithmKey);
         if (algorithm == null)
-            throw new ServiceException("Unable to create resource because of missing algorithm object.");
+            throw new ServiceException("Unable to create resource because of missing algorithm object. " +
+                    "Expecting algorithm of type: " + algorithmKey);
 
         String resolverKey = properties.getEntryValue(ResourceConstants.RESOURCE_URI_RESOLVER_CLASS);
         Resolver resolver = getResolverRegistry().getEntryValue(resolverKey);
         if (resolver == null)
-            throw new ServiceException("Unable to create resource because of missing resolver object.");
+            throw new ServiceException("Unable to create resource because of missing resolver object. " +
+                    "Expecting resolver of type: " + resolverKey);
 
         Resource resource = new ObjectResource(resourceName, rootNode, searchable.getClass(), algorithm, resolver);
 
@@ -224,22 +232,22 @@ public final class ServiceContext {
      * @param searchable the domain object.
      * @should register domain object using the class name.
      */
-    public void registerObject(final Searchable searchable) throws ServiceException {
+    public void registerSearchable(final Searchable searchable) throws ServiceException {
         if (searchable == null)
             throw new ServiceException("Trying to register invalid domain object.");
 
         getObjectRegistry().putEntry(searchable.getClass().getName(), searchable);
     }
 
-    public Searchable getObject(final String name) {
+    public Searchable getSearchable(final String name) {
         return getObjectRegistry().getEntryValue(name);
     }
 
-    public Searchable removeObject(final Searchable searchable) {
+    public Searchable removeSearchable(final Searchable searchable) {
         return getObjectRegistry().removeEntry(searchable.getClass().getName());
     }
 
-    public boolean containsObject(final Searchable searchable) {
+    public boolean containsSearchable(final Searchable searchable) {
         return getObjectRegistry().hasEntry(searchable.getClass().getName());
     }
 

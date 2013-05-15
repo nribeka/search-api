@@ -27,7 +27,6 @@ import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.resource.SearchableField;
 import com.mclinic.search.api.util.CollectionUtil;
-import com.mclinic.search.api.util.DigestUtil;
 import com.mclinic.search.api.util.StreamUtil;
 import com.mclinic.search.api.util.StringUtil;
 import net.minidev.json.JSONArray;
@@ -36,11 +35,15 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Version;
 
@@ -53,6 +56,8 @@ import java.util.List;
 public class DefaultIndexer implements Indexer {
 
     private Logger logger;
+
+    private String defaultField;
 
     private IndexWriter indexWriter;
 
@@ -69,8 +74,6 @@ public class DefaultIndexer implements Indexer {
 
     private final QueryParser parser;
 
-    private static final String DEFAULT_FIELD_CHECKSUM = "_checksum";
-
     private static final String DEFAULT_FIELD_JSON = "_json";
 
     private static final String DEFAULT_FIELD_CLASS = "_class";
@@ -82,6 +85,7 @@ public class DefaultIndexer implements Indexer {
     @Inject
     protected DefaultIndexer(final @Named("configuration.lucene.document.key") String defaultField,
                              final Version version, final Analyzer analyzer) {
+        this.defaultField = defaultField;
         this.parser = new QueryParser(version, defaultField, analyzer);
     }
 
@@ -120,8 +124,9 @@ public class DefaultIndexer implements Indexer {
      */
 
     private IndexWriter getIndexWriter() throws IOException {
-        if (indexWriter == null)
+        if (indexWriter == null) {
             indexWriter = writerProvider.get();
+        }
         return indexWriter;
     }
 
@@ -131,8 +136,9 @@ public class DefaultIndexer implements Indexer {
 
     private IndexSearcher getIndexSearcher() throws IOException {
         try {
-            if (indexSearcher == null)
+            if (indexSearcher == null) {
                 indexSearcher = searcherProvider.get();
+            }
         } catch (IOException e) {
             // silently ignoring this exception.
         }
@@ -172,8 +178,8 @@ public class DefaultIndexer implements Indexer {
      * @param value the value for the field
      * @return the valid lucene query for single term.
      */
-    private String createQuery(final String field, final String value) {
-        return "(" + field + ":" + StringUtil.quote(value) + ")";
+    private TermQuery createQuery(final String field, final String value) {
+        return new TermQuery(new Term(field, StringUtil.sanitize(StringUtil.lowerCase(value))));
     }
 
     /**
@@ -186,37 +192,30 @@ public class DefaultIndexer implements Indexer {
      * @param fields the searchable fields definition
      * @return query string which could be either a unique or full searchable field based query.
      */
-    private String createObjectQuery(final Object object, final List<SearchableField> fields) {
+    private Query createObjectQuery(final Object object, final List<SearchableField> fields) {
         boolean uniqueExists = false;
-        StringBuilder fullQuery = new StringBuilder();
-        StringBuilder uniqueQuery = new StringBuilder();
+        BooleanQuery fullBooleanQuery = new BooleanQuery();
+        BooleanQuery uniqueBooleanQuery = new BooleanQuery();
         for (SearchableField searchableField : fields) {
-            // we shouldn't include field that have null / empty value in the query
             Object valueObject = JsonPath.read(object, searchableField.getExpression());
             if (valueObject != null) {
                 String value = valueObject.toString();
-                String query = createQuery(searchableField.getName(), value);
+                TermQuery query = createQuery(searchableField.getName(), value);
+
+                fullBooleanQuery.add(query, BooleanClause.Occur.MUST);
 
                 if (searchableField.isUnique()) {
+                    uniqueBooleanQuery.add(query, BooleanClause.Occur.MUST);
                     uniqueExists = true;
-                    if (!StringUtil.isBlank(uniqueQuery.toString()))
-                        uniqueQuery.append(" AND ");
-                    uniqueQuery.append(query);
-                }
-
-                // only create the full query if we haven't found any unique key in the searchable fields.
-                if (!uniqueExists) {
-                    if (!StringUtil.isBlank(fullQuery.toString()))
-                        fullQuery.append(" AND ");
-                    fullQuery.append(query);
                 }
             }
         }
 
-        if (uniqueExists)
-            return uniqueQuery.toString();
-        else
-            return fullQuery.toString();
+        if (uniqueExists) {
+            return uniqueBooleanQuery;
+        } else {
+            return fullBooleanQuery;
+        }
     }
 
     /**
@@ -232,10 +231,8 @@ public class DefaultIndexer implements Indexer {
      * @param clazz the clazz for which the query is based on
      * @return the base query for a resource
      */
-    private String createClassQuery(final Class clazz) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(createQuery(DEFAULT_FIELD_CLASS, clazz.getName()));
-        return builder.toString();
+    private TermQuery createClassQuery(final Class clazz) {
+        return new TermQuery(new Term(DEFAULT_FIELD_CLASS, clazz.getName()));
     }
 
     /**
@@ -245,10 +242,8 @@ public class DefaultIndexer implements Indexer {
      * @param resource the resource for which the query is based on
      * @return the base query for a resource
      */
-    private String createResourceQuery(final Resource resource) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(createQuery(DEFAULT_FIELD_RESOURCE, resource.getName()));
-        return builder.toString();
+    private TermQuery createResourceQuery(final Resource resource) {
+        return new TermQuery(new Term(DEFAULT_FIELD_RESOURCE, resource.getName()));
     }
 
     /**
@@ -266,8 +261,9 @@ public class DefaultIndexer implements Indexer {
         if (searcher != null) {
             TopDocs docs = searcher.search(query, DEFAULT_MAX_DOCUMENTS);
             ScoreDoc[] hits = docs.scoreDocs;
-            for (ScoreDoc hit : hits)
+            for (ScoreDoc hit : hits) {
                 documents.add(searcher.doc(hit.doc));
+            }
         }
         return documents;
     }
@@ -283,28 +279,36 @@ public class DefaultIndexer implements Indexer {
     private void writeObject(final Object jsonObject, final Resource resource, final IndexWriter writer)
             throws IOException {
 
-        String checksum = DigestUtil.getSHA1Checksum(jsonObject.toString());
-
         Document document = new Document();
         document.add(new Field(DEFAULT_FIELD_JSON, jsonObject.toString(), Field.Store.YES, Field.Index.NO));
-        document.add(new Field(DEFAULT_FIELD_CHECKSUM, checksum, Field.Store.NO,
-                Field.Index.ANALYZED_NO_NORMS));
-        document.add(new Field(DEFAULT_FIELD_CLASS, resource.getResourceObject().getName(), Field.Store.NO,
-                Field.Index.ANALYZED_NO_NORMS));
+        document.add(new Field(DEFAULT_FIELD_CLASS, resource.getSearchable().getName(), Field.Store.NO,
+                Field.Index.NOT_ANALYZED));
         document.add(new Field(DEFAULT_FIELD_RESOURCE, resource.getName(), Field.Store.YES,
-                Field.Index.ANALYZED_NO_NORMS));
+                Field.Index.NOT_ANALYZED));
 
+        /*
+         * TODO: a better way to write this to lucene probably using the algorithm.
+         * Approach:
+         * - Get the algorithm object.
+         * - Pass the jsonObject to the algorithm object to create the actual object.
+         * - Iterate over each property of the class (using bean utils?) and add each of them to the document.
+         */
         for (SearchableField searchableField : resource.getSearchableFields()) {
             Object valueObject = JsonPath.read(jsonObject, searchableField.getExpression());
             String value = StringUtil.EMPTY;
-            // TODO: need a better way to handle this value
-            if (valueObject != null)
-                value = valueObject.toString();
-            document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.ANALYZED_NO_NORMS));
+            if (valueObject != null) {
+                value = StringUtil.sanitize(StringUtil.lowerCase(valueObject.toString()));
+            }
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(this.getClass().getSimpleName(),
+                        "Adding field: " + searchableField.getExpression() + " with value: " + value);
+            }
+            document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.NOT_ANALYZED));
         }
 
-        if (getLogger().isDebugEnabled())
+        if (getLogger().isDebugEnabled()) {
             getLogger().debug(this.getClass().getSimpleName(), "Writing document: " + document);
+        }
 
         writer.addDocument(document);
     }
@@ -321,20 +325,21 @@ public class DefaultIndexer implements Indexer {
      */
     private void deleteObject(final Object jsonObject, final Resource resource, final IndexWriter indexWriter)
             throws ParseException, IOException {
-        String queryString =
-                createResourceQuery(resource)
-                        + " AND (" + createObjectQuery(jsonObject, resource.getSearchableFields()) + ")";
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createResourceQuery(resource), BooleanClause.Occur.MUST);
+        booleanQuery.add(createObjectQuery(jsonObject, resource.getSearchableFields()), BooleanClause.Occur.MUST);
 
-        if (getLogger().isDebugEnabled())
-            getLogger().debug(this.getClass().getSimpleName(), "Query deleteObject(): " + queryString);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(), "Query deleteObject(): " + booleanQuery.toString());
+        }
 
-        Query query = parser.parse(queryString);
-        List<Document> documents = findDocuments(query);
+        List<Document> documents = findDocuments(booleanQuery);
         // only delete object if we can uniquely identify the object
-        if (documents.size() == 1)
-            indexWriter.deleteDocuments(query);
-        else if (documents.size() > 1)
+        if (documents.size() == 1) {
+            indexWriter.deleteDocuments(booleanQuery);
+        } else if (documents.size() > 1) {
             throw new IOException("Unable to uniquely identify an object using the json object in the repository.");
+        }
     }
 
     /**
@@ -363,8 +368,9 @@ public class DefaultIndexer implements Indexer {
         Object jsonObject = JsonPath.read(json, resource.getRootNode());
         if (jsonObject instanceof JSONArray) {
             JSONArray array = (JSONArray) jsonObject;
-            for (Object element : array)
+            for (Object element : array) {
                 updateObject(element, resource, getIndexWriter());
+            }
         } else if (jsonObject instanceof JSONObject) {
             updateObject(jsonObject, resource, getIndexWriter());
         }
@@ -374,18 +380,22 @@ public class DefaultIndexer implements Indexer {
     public <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException {
         T object = null;
 
-        String queryString = createClassQuery(clazz);
-        if (!StringUtil.isEmpty(key))
-            queryString = queryString + " AND " + key;
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createClassQuery(clazz), BooleanClause.Occur.MUST);
+        if (!StringUtil.isEmpty(key)) {
+            booleanQuery.add(createQuery(defaultField, key), BooleanClause.Occur.MUST);
+        }
 
-        if (getLogger().isDebugEnabled())
-            getLogger().debug(this.getClass().getSimpleName(), "Query getObject(String, Class): " + queryString);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObject(String, Class): " + booleanQuery.toString());
+        }
 
-        Query query = parser.parse(queryString);
-        List<Document> documents = findDocuments(query);
+        List<Document> documents = findDocuments(booleanQuery);
 
-        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1)
+        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1) {
             throw new IOException("Unable to uniquely identify an object using key: '" + key + "' in the repository.");
+        }
 
         for (Document document : documents) {
             String resourceName = document.get(DEFAULT_FIELD_RESOURCE);
@@ -401,18 +411,22 @@ public class DefaultIndexer implements Indexer {
     public Searchable getObject(final String key, final Resource resource) throws ParseException, IOException {
         Searchable object = null;
 
-        String queryString = createResourceQuery(resource);
-        if (!StringUtil.isEmpty(key))
-            queryString = queryString + " AND (" + key + ")";
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createResourceQuery(resource), BooleanClause.Occur.MUST);
+        if (!StringUtil.isEmpty(key)) {
+            booleanQuery.add(createQuery(defaultField, key), BooleanClause.Occur.MUST);
+        }
 
-        if (getLogger().isDebugEnabled())
-            getLogger().debug(this.getClass().getSimpleName(), "Query getObject(String,  Resource): " + queryString);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObject(String,  Resource): " + booleanQuery.toString());
+        }
 
-        Query query = parser.parse(queryString);
-        List<Document> documents = findDocuments(query);
+        List<Document> documents = findDocuments(booleanQuery);
 
-        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1)
+        if (!CollectionUtil.isEmpty(documents) && documents.size() > 1) {
             throw new IOException("Unable to uniquely identify an object using key: '" + key + "' in the repository.");
+        }
 
         for (Document document : documents) {
             String json = document.get(DEFAULT_FIELD_JSON);
@@ -425,7 +439,19 @@ public class DefaultIndexer implements Indexer {
     @Override
     public <T> List<T> getObjects(final Query query, final Class<T> clazz) throws IOException {
         List<T> objects = new ArrayList<T>();
-        List<Document> documents = findDocuments(query);
+
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createClassQuery(clazz), BooleanClause.Occur.MUST);
+        if (query != null) {
+            booleanQuery.add(query, BooleanClause.Occur.MUST);
+        }
+
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObject(String, Class): " + booleanQuery.toString());
+        }
+
+        List<Document> documents = findDocuments(booleanQuery);
         for (Document document : documents) {
             String resourceName = document.get(DEFAULT_FIELD_RESOURCE);
             Resource resource = getResourceRegistry().getEntryValue(resourceName);
@@ -438,7 +464,19 @@ public class DefaultIndexer implements Indexer {
     @Override
     public List<Searchable> getObjects(final Query query, final Resource resource) throws IOException {
         List<Searchable> objects = new ArrayList<Searchable>();
-        List<Document> documents = findDocuments(query);
+
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createResourceQuery(resource), BooleanClause.Occur.MUST);
+        if (query != null) {
+            booleanQuery.add(query, BooleanClause.Occur.MUST);
+        }
+
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObject(String, Class): " + booleanQuery.toString());
+        }
+
+        List<Document> documents = findDocuments(booleanQuery);
         for (Document document : documents) {
             String json = document.get(DEFAULT_FIELD_JSON);
             objects.add(resource.deserialize(json));
@@ -451,15 +489,19 @@ public class DefaultIndexer implements Indexer {
             throws ParseException, IOException {
         List<T> objects = new ArrayList<T>();
 
-        String queryString = createClassQuery(clazz);
-        if (!StringUtil.isEmpty(searchString))
-            queryString = queryString + " AND (" + searchString + ")";
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createClassQuery(clazz), BooleanClause.Occur.MUST);
+        if (!StringUtil.isEmpty(searchString)) {
+            Query query = parser.parse(searchString);
+            booleanQuery.add(query, BooleanClause.Occur.MUST);
+        }
 
-        if (getLogger().isDebugEnabled())
-            getLogger().debug(this.getClass().getSimpleName(), "Query getObjects(String, Class): " + queryString);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObjects(String, Class): " + booleanQuery.toString());
+        }
 
-        Query query = parser.parse(queryString);
-        List<Document> documents = findDocuments(query);
+        List<Document> documents = findDocuments(booleanQuery);
         for (Document document : documents) {
             String resourceName = document.get(DEFAULT_FIELD_RESOURCE);
             Resource resource = getResourceRegistry().getEntryValue(resourceName);
@@ -478,15 +520,20 @@ public class DefaultIndexer implements Indexer {
         // - add checksum field to the lucene instead of a new uuid field
         // - add checksum field to the searchable object
         // - add checksum value on the object from the algorithm
-        String queryString = createResourceQuery(resource);
-        if (!StringUtil.isEmpty(searchString))
-            queryString = queryString + " AND (" + searchString + ")";
 
-        if (getLogger().isDebugEnabled())
-            getLogger().debug(this.getClass().getSimpleName(), "Query getObjects(String, Resource): " + queryString);
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(createResourceQuery(resource), BooleanClause.Occur.MUST);
+        if (!StringUtil.isEmpty(searchString)) {
+            Query query = parser.parse(searchString);
+            booleanQuery.add(query, BooleanClause.Occur.MUST);
+        }
 
-        Query query = parser.parse(queryString);
-        List<Document> documents = findDocuments(query);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(this.getClass().getSimpleName(),
+                    "Query getObjects(String, Resource): " + booleanQuery.toString());
+        }
+
+        List<Document> documents = findDocuments(booleanQuery);
         for (Document document : documents) {
             String json = document.get(DEFAULT_FIELD_JSON);
             objects.add(resource.deserialize(json));
@@ -497,23 +544,9 @@ public class DefaultIndexer implements Indexer {
     @Override
     public Searchable deleteObject(final Searchable object, final Resource resource)
             throws ParseException, IOException {
-        // TODO: if the checksum is not available, we need to fallback to all properties query to find the document.
-        String checksum = object.getChecksum();
-        String queryString = createResourceQuery(resource);
-        if (!StringUtil.isEmpty(checksum))
-            queryString = queryString + " AND " + createQuery(DEFAULT_FIELD_CHECKSUM, checksum);
-
-        if (getLogger().isDebugEnabled())
-            getLogger().debug(this.getClass().getSimpleName(), "Query deleteObject(): " + queryString);
-
-        Query query = parser.parse(queryString);
-        List<Document> documents = findDocuments(query);
-        // only delete object if we can uniquely identify the object
-        if (documents.size() == 1)
-            getIndexWriter().deleteDocuments(query);
-        else if (documents.size() > 1)
-            throw new IOException("Unable to uniquely identify an object using the json object in the repository.");
-
+        String jsonString = resource.serialize(object);
+        Object jsonObject = JsonPath.read(jsonString, "$");
+        deleteObject(jsonObject, resource, getIndexWriter());
         commit();
         return object;
     }

@@ -22,13 +22,15 @@ public class Patient extends BaseSearchable {
 
     private String uuid;
 
-    private String name;
+    private String givenName;
+
+    private String middleName;
+
+    private String familyName;
 
     private String identifier;
 
     private String gender;
-
-    private String checksum;
 
     /**
      * Get the patient internal uuid
@@ -49,21 +51,57 @@ public class Patient extends BaseSearchable {
     }
 
     /**
-     * Get the patient name
+     * Get the given name for the patient.
      *
-     * @return the patient name
+     * @return the given name for the patient.
      */
-    public String getName() {
-        return name;
+    public String getGivenName() {
+        return givenName;
     }
 
     /**
-     * Set the patient name
+     * Set the given name for the patient.
      *
-     * @param name the patient name
+     * @param givenName the given name for the patient.
      */
-    public void setName(final String name) {
-        this.name = name;
+    public void setGivenName(final String givenName) {
+        this.givenName = givenName;
+    }
+
+    /**
+     * Get the middle name for the patient.
+     *
+     * @return the middle name for the patient.
+     */
+    public String getMiddleName() {
+        return middleName;
+    }
+
+    /**
+     * Set the middle name for the patient.
+     *
+     * @param middleName the middle name for the patient.
+     */
+    public void setMiddleName(final String middleName) {
+        this.middleName = middleName;
+    }
+
+    /**
+     * Get the family name for the patient.
+     *
+     * @return the family name for the patient.
+     */
+    public String getFamilyName() {
+        return familyName;
+    }
+
+    /**
+     * Set the family name for the patient.
+     *
+     * @param familyName the family name for the patient.
+     */
+    public void setFamilyName(final String familyName) {
+        this.familyName = familyName;
     }
 
     /**
@@ -100,25 +138,5 @@ public class Patient extends BaseSearchable {
      */
     public void setGender(final String gender) {
         this.gender = gender;
-    }
-
-    /**
-     * Get the checksum for the searchable object.
-     *
-     * @return the searchable object's checksum.
-     */
-    @Override
-    public String getChecksum() {
-        return checksum;
-    }
-
-    /**
-     * Set the checksum for the searchable object.
-     *
-     * @param checksum the checksum for the searchable object.
-     */
-    @Override
-    public void setChecksum(final String checksum) {
-        this.checksum = checksum;
     }
 }

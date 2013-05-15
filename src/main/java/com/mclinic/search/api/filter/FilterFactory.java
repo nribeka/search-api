@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.mclinic.search.api.filter;
 
-package com.mclinic.search.api.sample.resolver;
+/**
+ * TODO: Write brief description about the class here.
+ */
+public class FilterFactory {
 
-public class CohortMemberResolver extends AbstractResolver {
-
-    /**
-     * Return the full REST resource based on the search string passed to the method.
-     *
-     * @param searchString the search string
-     * @return full URI to the REST resource
-     */
-    @Override
-    public String resolve(final String searchString) {
-        return WEB_SERVER + WEB_CONTEXT + "ws/rest/v1/cohort/" + searchString + "/member?v=full";
+    public static Filter createFilter(final String fieldName, final String fieldValue) {
+        Filter filter = new Filter();
+        filter.setFieldName(fieldName);
+        filter.setFieldValue(fieldValue);
+        return filter;
     }
 }
