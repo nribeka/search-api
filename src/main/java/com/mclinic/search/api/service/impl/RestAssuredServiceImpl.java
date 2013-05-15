@@ -26,6 +26,7 @@ import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.service.RestAssuredService;
 import com.mclinic.search.api.util.FilenameUtil;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -177,6 +178,36 @@ public class RestAssuredServiceImpl implements RestAssuredService {
     @Override
     public Searchable getObject(final String key, final Resource resource) throws ParseException, IOException {
         return indexer.getObject(key, resource);
+    }
+
+    /**
+     * Search for objects with matching <code>query</code></code> and <code>clazz</code> type from the local repository.
+     * This method will return list of all matching object or empty list if no object match the search query.
+     *
+     * @param query the search query to limit the number of returned object
+     * @param clazz the expected return type of the object
+     * @return list of all object with matching <code>query</code> and <code>clazz</code> or empty list
+     * @should return all object matching the search query string and class
+     * @should return empty list when no object match the search query and class
+     */
+    @Override
+    public <T> List<T> getObjects(final Query query, final Class<T> clazz) throws IOException {
+        return indexer.getObjects(query, clazz);
+    }
+
+    /**
+     * Search for objects with matching <code>query</code> and <code>resource</code> type from the local repository.
+     * This method will return list of all matching object or empty list if no object match the search query.
+     *
+     * @param query    the search query to limit the number of returned object
+     * @param resource the resource descriptor used to register the object
+     * @return list of all object with matching <code>query</code> and <code>resource</code> or empty list
+     * @should return all object matching the search query and resource
+     * @should return empty list when no object match the search query and resource
+     */
+    @Override
+    public List<Searchable> getObjects(final Query query, final Resource resource) throws IOException {
+        return indexer.getObjects(query, resource);
     }
 
     /**

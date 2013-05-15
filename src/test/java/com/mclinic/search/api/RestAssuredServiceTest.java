@@ -16,9 +16,13 @@
 
 package com.mclinic.search.api;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.jayway.jsonpath.JsonPath;
+import com.mclinic.search.api.context.ServiceContext;
 import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.module.JUnitModule;
+import com.mclinic.search.api.module.SearchModule;
 import com.mclinic.search.api.resource.Resource;
 import com.mclinic.search.api.sample.algorithm.PatientAlgorithm;
 import com.mclinic.search.api.sample.domain.Patient;
@@ -40,6 +44,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class RestAssuredServiceTest {
+
+    private ServiceContext context;
 
     private RestAssuredService service;
 
@@ -74,20 +80,20 @@ public class RestAssuredServiceTest {
 
     @Before
     public void prepare() throws Exception {
-        // initialize context object with additional parameters from the junit module
-        Context.initialize(new JUnitModule());
+        Injector injector = Guice.createInjector(new SearchModule(), new JUnitModule());
+        context = injector.getInstance(ServiceContext.class);
 
-        Context.registerObject(new Patient());
-        Context.registerResolver(new PatientResolver());
-        Context.registerAlgorithm(new PatientAlgorithm());
+        context.registerObject(new Patient());
+        context.registerResolver(new PatientResolver());
+        context.registerAlgorithm(new PatientAlgorithm());
 
         URL configurationUri = RestAssuredServiceTest.class.getResource(CORPUS_CONFIGURATION_FILE);
-        Context.registerResources(new File(configurationUri.getPath()));
+        context.registerResources(new File(configurationUri.getPath()));
 
-        Resource resource = Context.getResource(PATIENT_RESOURCE);
+        Resource resource = context.getResource(PATIENT_RESOURCE);
         Assert.assertNotNull(resource);
 
-        service = Context.getService();
+        service = injector.getInstance(RestAssuredService.class);
         Assert.assertNotNull(service);
 
         // read the corpus location
@@ -201,7 +207,7 @@ public class RestAssuredServiceTest {
      */
     @Test
     public void getObject_shouldReturnObjectWithMatchingKey() throws Exception {
-        Resource resource = Context.getResource(PATIENT_RESOURCE);
+        Resource resource = context.getResource(PATIENT_RESOURCE);
         Patient patient = (Patient) service.getObject(StringUtil.quote(patientUuid), resource);
         Assert.assertNotNull(patient);
         Assert.assertEquals(patientUuid, patient.getUuid());
@@ -213,7 +219,7 @@ public class RestAssuredServiceTest {
      */
     @Test
     public void getObject_shouldReturnNullWhenNoObjectMatchTheKey() throws Exception {
-        Resource resource = Context.getResource(PATIENT_RESOURCE);
+        Resource resource = context.getResource(PATIENT_RESOURCE);
         Patient patient = (Patient) service.getObject(StringUtil.quote(UUID.randomUUID().toString()), resource);
         Assert.assertNull(patient);
     }
@@ -224,7 +230,7 @@ public class RestAssuredServiceTest {
      */
     @Test(expected = IOException.class)
     public void getObject_shouldThrowIOExceptionIfTheKeyAndResourceUnableToReturnUniqueObject() throws Exception {
-        Resource resource = Context.getResource(PATIENT_RESOURCE);
+        Resource resource = context.getResource(PATIENT_RESOURCE);
         Patient patient = (Patient) service.getObject("name: T*", resource);
         Assert.assertNull(patient);
     }
@@ -257,7 +263,7 @@ public class RestAssuredServiceTest {
      */
     @Test
     public void getObjects_shouldReturnAllObjectMatchingTheSearchSearchStringAndResource() throws Exception {
-        Resource resource = Context.getResource(PATIENT_RESOURCE);
+        Resource resource = context.getResource(PATIENT_RESOURCE);
         List<Searchable> patients = service.getObjects("name: T*", resource);
         Assert.assertNotNull(patients);
         Assert.assertTrue(patients.size() > 0);
@@ -273,7 +279,7 @@ public class RestAssuredServiceTest {
      */
     @Test
     public void getObjects_shouldReturnEmptyListWhenNoObjectMatchTheSearchStringAndResource() throws Exception {
-        Resource resource = Context.getResource(PATIENT_RESOURCE);
+        Resource resource = context.getResource(PATIENT_RESOURCE);
         List<Searchable> patients = service.getObjects("name: Zz*", resource);
         Assert.assertNotNull(patients);
         Assert.assertTrue(patients.size() == 0);
@@ -289,7 +295,7 @@ public class RestAssuredServiceTest {
         Assert.assertNotNull(patient);
         Assert.assertEquals(patientUuid, patient.getUuid());
 
-        Resource resource = Context.getResource(PATIENT_RESOURCE);
+        Resource resource = context.getResource(PATIENT_RESOURCE);
         Patient deletedPatient = (Patient) service.invalidate(patient, resource);
         Assert.assertNotNull(deletedPatient);
         Assert.assertEquals(patientUuid, deletedPatient.getUuid());
