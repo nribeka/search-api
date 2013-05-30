@@ -361,19 +361,21 @@ public class DefaultIndexer implements Indexer {
     }
 
     @Override
-    public void loadObjects(final Resource resource, final InputStream inputStream)
+    public List<Searchable> loadObjects(final Resource resource, final InputStream inputStream)
             throws ParseException, IOException {
+        List<Searchable> searchables = new ArrayList<Searchable>();
         InputStreamReader reader = new InputStreamReader(inputStream);
         String json = StreamUtil.readAsString(reader);
         Object jsonObject = JsonPath.read(json, resource.getRootNode());
         if (jsonObject instanceof JSONArray) {
             JSONArray array = (JSONArray) jsonObject;
             for (Object element : array) {
-                updateObject(element, resource, getIndexWriter());
+                searchables.add(resource.deserialize(element.toString()));
             }
         } else if (jsonObject instanceof JSONObject) {
-            updateObject(jsonObject, resource, getIndexWriter());
+            searchables.add(resource.deserialize(jsonObject.toString()));
         }
+        return searchables;
     }
 
     @Override

@@ -104,7 +104,10 @@ public class RestAssuredServiceTest {
         URL corpus = RestAssuredServiceTest.class.getResource(CORPUS_DIRECTORY);
 
         // load and save the corpus information into lucene database
-        service.loadObjects(StringUtil.EMPTY, resource, new File(corpus.getPath()));
+        List<Searchable> searchables = service.loadObjects(StringUtil.EMPTY, resource, new File(corpus.getPath()));
+        for (Searchable searchable : searchables) {
+            service.createObject(searchable, resource);
+        }
     }
 
     @After
