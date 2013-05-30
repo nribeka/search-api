@@ -29,8 +29,6 @@ import com.mclinic.search.api.internal.provider.ReaderProvider;
 import com.mclinic.search.api.internal.provider.SearchProvider;
 import com.mclinic.search.api.internal.provider.SearcherProvider;
 import com.mclinic.search.api.internal.provider.WriterProvider;
-import com.mclinic.search.api.logger.ConsoleLogger;
-import com.mclinic.search.api.logger.Logger;
 import com.mclinic.search.api.registry.DefaultRegistry;
 import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.resource.Resource;
@@ -50,8 +48,6 @@ public class SearchModule extends AbstractModule {
      */
     @Override
     protected void configure() {
-        bind(Logger.class).to(ConsoleLogger.class).in(Singleton.class);
-
         bind(Integer.class)
                 .annotatedWith(Names.named("connection.timeout"))
                 .toInstance(1000);

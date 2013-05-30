@@ -16,7 +16,6 @@
 
 package com.mclinic.search.api.service;
 
-import com.mclinic.search.api.Loggable;
 import com.mclinic.search.api.filter.Filter;
 import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.resource.Resource;
@@ -26,7 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public interface RestAssuredService extends Loggable {
+public interface RestAssuredService {
 
     /**
      * Load object described using the <code>resource</code> into local lucene repository. This method will use the URI
@@ -45,8 +44,7 @@ public interface RestAssuredService extends Loggable {
      * @param resource     the resource object which will describe how to index the json resource to lucene.
      * @should load objects based on the resource description
      */
-    List<Searchable> loadObjects(final String searchString, final Resource resource)
-            throws ParseException, IOException;
+    List<Searchable> loadObjects(final String searchString, final Resource resource) throws IOException;
 
     /**
      * Load object described using the <code>resource</code> into local lucene repository. This method will load locally
@@ -61,7 +59,7 @@ public interface RestAssuredService extends Loggable {
      * @see RestAssuredService#loadObjects(String, com.mclinic.search.api.resource.Resource)
      */
     List<Searchable> loadObjects(final String searchString, final Resource resource, final File file)
-            throws ParseException, IOException;
+            throws IOException;
 
     /**
      * Search for an object with matching <code>key</code> and <code>clazz</code> type from the local repository. This
@@ -79,7 +77,7 @@ public interface RestAssuredService extends Loggable {
      * @should return null when no object match the key and type
      * @should throw IOException if the key and class unable to return unique object
      */
-    <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException;
+    <T> T getObject(final String key, final Class<T> clazz) throws IOException;
 
     /**
      * Search for an object with matching <code>key</code> and <code>clazz</code> type from the local repository. This
@@ -96,7 +94,7 @@ public interface RestAssuredService extends Loggable {
      * @should return null when no object match the key
      * @should throw IOException if the key and resource unable to return unique object
      */
-    Searchable getObject(final String key, final Resource resource) throws ParseException, IOException;
+    Searchable getObject(final String key, final Resource resource) throws IOException;
 
     /**
      * Search for objects with matching <code>filter</code> and <code>clazz</code> type from the local repository.
@@ -163,7 +161,7 @@ public interface RestAssuredService extends Loggable {
      * @return removed object or null if no object was removed.
      * @should remove an object from the internal index system
      */
-    Searchable invalidate(final Searchable object, final Resource resource) throws ParseException, IOException;
+    Searchable invalidate(final Searchable object, final Resource resource) throws IOException;
 
     /**
      * Create an instance of object in the local repository.
@@ -175,7 +173,7 @@ public interface RestAssuredService extends Loggable {
      * @param resource the resource object which will describe how to index the json resource to lucene.
      * @return the object that was created
      */
-    Searchable createObject(Searchable object, Resource resource) throws ParseException, IOException;
+    Searchable createObject(Searchable object, Resource resource) throws IOException;
 
     /**
      * Update an instance of object in the local repository.
@@ -188,5 +186,5 @@ public interface RestAssuredService extends Loggable {
      * @param resource the resource object which will describe how to index the json resource to lucene.
      * @return the object that was updated
      */
-    Searchable updateObject(Searchable object, Resource resource) throws ParseException, IOException;
+    Searchable updateObject(Searchable object, Resource resource) throws IOException;
 }

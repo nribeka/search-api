@@ -20,7 +20,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.mclinic.search.api.filter.Filter;
 import com.mclinic.search.api.internal.lucene.Indexer;
-import com.mclinic.search.api.logger.Logger;
 import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.model.resolver.Resolver;
 import com.mclinic.search.api.resource.Resource;
@@ -44,8 +43,6 @@ import java.util.List;
 
 public class RestAssuredServiceImpl implements RestAssuredService {
 
-    private Logger logger;
-
     private Indexer indexer;
 
     @Inject
@@ -58,27 +55,6 @@ public class RestAssuredServiceImpl implements RestAssuredService {
     }
 
     /**
-     * Set the logger for this class. The logger will be injected using guice.
-     *
-     * @param logger the logger class.
-     */
-    @Inject
-    @Override
-    public void setLogger(final Logger logger) {
-        this.logger = logger;
-    }
-
-    /**
-     * Get the logger for this class. The logger will be injected by guice.
-     *
-     * @return the logger.
-     */
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-    /**
      * Get remote REST resource.
      * <p/>
      * This method will use the URI resolver to resolve the URI of the REST resources and then apply the
@@ -88,8 +64,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @param resource     the resource object which will describe how to index the json resource to lucene.
      */
     @Override
-    public List<Searchable> loadObjects(final String searchString, final Resource resource)
-            throws ParseException, IOException {
+    public List<Searchable> loadObjects(final String searchString, final Resource resource) throws IOException {
 
         Resolver resolver = resource.getResolver();
 
@@ -119,12 +94,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      */
     @Override
     public List<Searchable> loadObjects(final String searchString, final Resource resource, final File file)
-            throws ParseException, IOException {
-        return loadObjects(searchString, resource, file, true);
-    }
-
-    private List<Searchable> loadObjects(final String searchString, final Resource resource, final File file, final boolean commit)
-            throws ParseException, IOException {
+            throws IOException {
         List<Searchable> searchables = new ArrayList<Searchable>();
         if (!file.isDirectory() && FilenameUtil.contains(file.getName(), searchString)) {
             FileInputStream stream = null;
@@ -139,7 +109,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File jsonFile : files)
-                    searchables.addAll(loadObjects(searchString, resource, jsonFile, false));
+                    searchables.addAll(loadObjects(searchString, resource, jsonFile));
             }
         }
         return searchables;
@@ -159,7 +129,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @return object with matching key and clazz or null
      */
     @Override
-    public <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException {
+    public <T> T getObject(final String key, final Class<T> clazz) throws IOException {
         return indexer.getObject(key, clazz);
     }
 
@@ -176,7 +146,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @return object with matching key and clazz or null
      */
     @Override
-    public Searchable getObject(final String key, final Resource resource) throws ParseException, IOException {
+    public Searchable getObject(final String key, final Resource resource) throws IOException {
         return indexer.getObject(key, resource);
     }
 
@@ -268,7 +238,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @return removed object or null if no object was removed.
      */
     @Override
-    public Searchable invalidate(final Searchable object, final Resource resource) throws ParseException, IOException {
+    public Searchable invalidate(final Searchable object, final Resource resource) throws IOException {
         return indexer.deleteObject(object, resource);
     }
 
@@ -289,7 +259,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @return the object that was created
      */
     @Override
-    public Searchable createObject(final Searchable object, final Resource resource) throws ParseException, IOException {
+    public Searchable createObject(final Searchable object, final Resource resource) throws IOException {
         return indexer.createObject(object, resource);
     }
 
@@ -305,7 +275,7 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @return the object that was updated
      */
     @Override
-    public Searchable updateObject(final Searchable object, final Resource resource) throws ParseException, IOException {
+    public Searchable updateObject(final Searchable object, final Resource resource) throws IOException {
         return indexer.updateObject(object, resource);
     }
 }

@@ -16,12 +16,10 @@
 
 package com.mclinic.search.api.model.resolver;
 
-import com.mclinic.search.api.Loggable;
-
 import java.io.IOException;
 import java.net.URLConnection;
 
-public interface Resolver extends Loggable {
+public interface Resolver {
 
     /**
      * Return the full REST resource based on the search string passed to the method.
