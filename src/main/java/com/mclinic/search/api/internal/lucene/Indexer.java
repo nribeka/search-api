@@ -28,7 +28,7 @@ import java.util.List;
 
 public interface Indexer extends Loggable {
 
-    void loadObjects(final Resource resource, final InputStream inputStream) throws ParseException, IOException;
+    List<Searchable> loadObjects(final Resource resource, final InputStream inputStream) throws ParseException, IOException;
 
     <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException;
 

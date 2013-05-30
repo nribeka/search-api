@@ -40,11 +40,12 @@ public interface RestAssuredService extends Loggable {
      * _date_indexed : date and time when the json was indexed
      * </pre>
      *
+     *
      * @param searchString the string to filter object that from the REST resource.
      * @param resource     the resource object which will describe how to index the json resource to lucene.
      * @should load objects based on the resource description
      */
-    void loadObjects(final String searchString, final Resource resource)
+    List<Searchable> loadObjects(final String searchString, final Resource resource)
             throws ParseException, IOException;
 
     /**
@@ -52,13 +53,14 @@ public interface RestAssuredService extends Loggable {
      * saved json payload and then apply the <code>searchString</code> to limit the data which will be loaded into the
      * local lucene repository.
      *
+     *
      * @param searchString the search string to filter object returned from the file.
      * @param resource     the resource object which will describe how to index the json resource to lucene.
      * @param file         the file in the filesystem where the json resource is saved.
      * @should load object from filesystem based on the resource description
      * @see RestAssuredService#loadObjects(String, com.mclinic.search.api.resource.Resource)
      */
-    void loadObjects(final String searchString, final Resource resource, final File file)
+    List<Searchable> loadObjects(final String searchString, final Resource resource, final File file)
             throws ParseException, IOException;
 
     /**

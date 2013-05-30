@@ -39,6 +39,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RestAssuredServiceImpl implements RestAssuredService {
@@ -78,22 +79,16 @@ public class RestAssuredServiceImpl implements RestAssuredService {
     }
 
     /**
-     * Load object described using the <code>resource</code> into local lucene repository. This method will use the URI
-     * resolver to resolve the URI of the REST resources and then apply the <code>searchString</code> to limit the data
-     * which will be loaded into the local lucene repository.
+     * Get remote REST resource.
      * <p/>
-     * Internally, this method will also add the following field:
-     * <pre>
-     * _class : the expected representation of the json when serialized
-     * _resource : the resource configuration used to convert the json to lucene
-     * _date_indexed : date and time when the json was indexed
-     * </pre>
+     * This method will use the URI resolver to resolve the URI of the REST resources and then apply the
+     * <code>searchString</code> to limit the data that needs to get converted.
      *
      * @param searchString the string to filter object that from the REST resource.
      * @param resource     the resource object which will describe how to index the json resource to lucene.
      */
     @Override
-    public void loadObjects(final String searchString, final Resource resource)
+    public List<Searchable> loadObjects(final String searchString, final Resource resource)
             throws ParseException, IOException {
 
         Resolver resolver = resource.getResolver();
@@ -108,14 +103,14 @@ public class RestAssuredServiceImpl implements RestAssuredService {
         //   - this method then will read the response from the server
         //   - delegate the paging handling to the subclass (if applicable).
         // - short term solution: increase the page size
-        indexer.loadObjects(resource, connection.getInputStream());
-        indexer.commit();
+        return indexer.loadObjects(resource, connection.getInputStream());
     }
 
     /**
-     * Load object described using the <code>resource</code> into local lucene repository. This method will load locally
-     * saved json payload and then apply the <code>searchString</code> to limit the data which will be loaded into the
-     * local lucene repository.
+     * Convert JSON from local file to the correct object representation.
+     *
+     * This method will load locally saved json payload and then apply the <code>searchString</code> to limit the data
+     * that needs to get converted.
      *
      * @param searchString the search string to filter object returned from the file.
      * @param resource     the resource object which will describe how to index the json resource to lucene.
@@ -123,18 +118,19 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * @see RestAssuredService#loadObjects(String, com.mclinic.search.api.resource.Resource)
      */
     @Override
-    public void loadObjects(final String searchString, final Resource resource, final File file)
+    public List<Searchable> loadObjects(final String searchString, final Resource resource, final File file)
             throws ParseException, IOException {
-        loadObjects(searchString, resource, file, true);
+        return loadObjects(searchString, resource, file, true);
     }
 
-    private void loadObjects(final String searchString, final Resource resource, final File file, final boolean commit)
+    private List<Searchable> loadObjects(final String searchString, final Resource resource, final File file, final boolean commit)
             throws ParseException, IOException {
+        List<Searchable> searchables = new ArrayList<Searchable>();
         if (!file.isDirectory() && FilenameUtil.contains(file.getName(), searchString)) {
             FileInputStream stream = null;
             try {
                 stream = new FileInputStream(file);
-                indexer.loadObjects(resource, stream);
+                return indexer.loadObjects(resource, stream);
             } finally {
                 if (stream != null)
                     stream.close();
@@ -143,12 +139,10 @@ public class RestAssuredServiceImpl implements RestAssuredService {
             File[] files = file.listFiles();
             if (files != null) {
                 for (File jsonFile : files)
-                    loadObjects(searchString, resource, jsonFile, false);
+                    searchables.addAll(loadObjects(searchString, resource, jsonFile, false));
             }
         }
-
-        if (commit)
-            indexer.commit();
+        return searchables;
     }
 
     /**
@@ -283,6 +277,12 @@ public class RestAssuredServiceImpl implements RestAssuredService {
      * <p/>
      * Internally, this method will serialize the object and using the resource configuration to create an entry in
      * the lucene local repository.
+     * <p/>
+     * Internally, this method will also add the following field:
+     * <pre>
+     * _class : the expected representation of the json when serialized
+     * _resource : the resource configuration used to convert the json to lucene
+     * </pre>
      *
      * @param object   the object to be created
      * @param resource the resource object which will describe how to index the json resource to lucene.
