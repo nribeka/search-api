@@ -18,14 +18,13 @@ package com.mclinic.search.api.sample.algorithm;
 
 import com.jayway.jsonpath.JsonPath;
 import com.mclinic.search.api.model.object.Searchable;
-import com.mclinic.search.api.model.serialization.BaseAlgorithm;
+import com.mclinic.search.api.model.serialization.Algorithm;
 import com.mclinic.search.api.sample.domain.Patient;
-import com.mclinic.search.api.util.DigestUtil;
 import net.minidev.json.JSONObject;
 
 import java.io.IOException;
 
-public class PatientAlgorithm  extends BaseAlgorithm {
+public class PatientAlgorithm implements Algorithm {
 
     /**
      * Implementation of this method will define how the patient will be serialized from the JSON representation.

@@ -16,7 +16,6 @@
 
 package com.mclinic.search.api.model.serialization;
 
-import com.mclinic.search.api.Loggable;
 import com.mclinic.search.api.model.object.Searchable;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ import java.io.IOException;
 /**
  * Base interface to serialize and de-serialize String into the correct object representation.
  */
-public interface Algorithm extends Loggable {
+public interface Algorithm {
 
     /**
      * Implementation of this method will define how the object will be serialized from the String representation.

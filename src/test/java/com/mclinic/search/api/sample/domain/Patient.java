@@ -16,9 +16,9 @@
 
 package com.mclinic.search.api.sample.domain;
 
-import com.mclinic.search.api.model.object.BaseSearchable;
+import com.mclinic.search.api.model.object.Searchable;
 
-public class Patient extends BaseSearchable {
+public class Patient implements Searchable {
 
     private String uuid;
 

@@ -21,7 +21,6 @@ import com.google.inject.name.Named;
 import com.jayway.jsonpath.JsonPath;
 import com.mclinic.search.api.internal.provider.SearcherProvider;
 import com.mclinic.search.api.internal.provider.WriterProvider;
-import com.mclinic.search.api.logger.Logger;
 import com.mclinic.search.api.model.object.Searchable;
 import com.mclinic.search.api.registry.Registry;
 import com.mclinic.search.api.resource.Resource;
@@ -46,6 +45,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +56,7 @@ import java.util.List;
 
 public class DefaultIndexer implements Indexer {
 
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(DefaultIndexer.class.getSimpleName());
 
     private String defaultField;
 
@@ -87,27 +88,6 @@ public class DefaultIndexer implements Indexer {
                              final Version version, final Analyzer analyzer) {
         this.defaultField = defaultField;
         this.parser = new QueryParser(version, defaultField, analyzer);
-    }
-
-    /**
-     * Set the logger for this class. The logger will be injected using guice.
-     *
-     * @param logger the logger class.
-     */
-    @Inject
-    @Override
-    public void setLogger(final Logger logger) {
-        this.logger = logger;
-    }
-
-    /**
-     * Get the logger for this class. The logger will be injected by guice.
-     *
-     * @return the logger.
-     */
-    @Override
-    public Logger getLogger() {
-        return logger;
     }
 
     /**
@@ -299,15 +279,14 @@ public class DefaultIndexer implements Indexer {
             if (valueObject != null) {
                 value = StringUtil.sanitize(StringUtil.lowerCase(valueObject.toString()));
             }
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug(this.getClass().getSimpleName(),
-                        "Adding field: " + searchableField.getExpression() + " with value: " + value);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Adding field: {} with value: {}", searchableField.getExpression(), value);
             }
             document.add(new Field(searchableField.getName(), value, Field.Store.NO, Field.Index.NOT_ANALYZED));
         }
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(), "Writing document: " + document);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Writing document: {}", document);
         }
 
         writer.addDocument(document);
@@ -324,13 +303,13 @@ public class DefaultIndexer implements Indexer {
      * @throws IOException    when other error happens during the deletion process.
      */
     private void deleteObject(final Object jsonObject, final Resource resource, final IndexWriter indexWriter)
-            throws ParseException, IOException {
+            throws IOException {
         BooleanQuery booleanQuery = new BooleanQuery();
         booleanQuery.add(createResourceQuery(resource), BooleanClause.Occur.MUST);
         booleanQuery.add(createObjectQuery(jsonObject, resource.getSearchableFields()), BooleanClause.Occur.MUST);
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(), "Query deleteObject(): " + booleanQuery.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query deleteObject(): {}", booleanQuery.toString());
         }
 
         List<Document> documents = findDocuments(booleanQuery);
@@ -353,7 +332,7 @@ public class DefaultIndexer implements Indexer {
      * @throws IOException    when other error happens during the deletion process.
      */
     private void updateObject(final Object jsonObject, final Resource resource, final IndexWriter indexWriter)
-            throws ParseException, IOException {
+            throws IOException {
         // search for the same object, if they exists, delete them :)
         deleteObject(jsonObject, resource, indexWriter);
         // write the new object
@@ -362,7 +341,7 @@ public class DefaultIndexer implements Indexer {
 
     @Override
     public List<Searchable> loadObjects(final Resource resource, final InputStream inputStream)
-            throws ParseException, IOException {
+            throws IOException {
         List<Searchable> searchables = new ArrayList<Searchable>();
         InputStreamReader reader = new InputStreamReader(inputStream);
         String json = StreamUtil.readAsString(reader);
@@ -379,7 +358,7 @@ public class DefaultIndexer implements Indexer {
     }
 
     @Override
-    public <T> T getObject(final String key, final Class<T> clazz) throws ParseException, IOException {
+    public <T> T getObject(final String key, final Class<T> clazz) throws IOException {
         T object = null;
 
         BooleanQuery booleanQuery = new BooleanQuery();
@@ -388,9 +367,8 @@ public class DefaultIndexer implements Indexer {
             booleanQuery.add(createQuery(defaultField, key), BooleanClause.Occur.MUST);
         }
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(),
-                    "Query getObject(String, Class): " + booleanQuery.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query getObject(String, Class): {}", booleanQuery.toString());
         }
 
         List<Document> documents = findDocuments(booleanQuery);
@@ -410,7 +388,7 @@ public class DefaultIndexer implements Indexer {
     }
 
     @Override
-    public Searchable getObject(final String key, final Resource resource) throws ParseException, IOException {
+    public Searchable getObject(final String key, final Resource resource) throws IOException {
         Searchable object = null;
 
         BooleanQuery booleanQuery = new BooleanQuery();
@@ -419,9 +397,8 @@ public class DefaultIndexer implements Indexer {
             booleanQuery.add(createQuery(defaultField, key), BooleanClause.Occur.MUST);
         }
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(),
-                    "Query getObject(String,  Resource): " + booleanQuery.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query getObject(String,  Resource): {}", booleanQuery.toString());
         }
 
         List<Document> documents = findDocuments(booleanQuery);
@@ -448,9 +425,8 @@ public class DefaultIndexer implements Indexer {
             booleanQuery.add(query, BooleanClause.Occur.MUST);
         }
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(),
-                    "Query getObject(String, Class): " + booleanQuery.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query getObject(String, Class): {}", booleanQuery.toString());
         }
 
         List<Document> documents = findDocuments(booleanQuery);
@@ -473,9 +449,8 @@ public class DefaultIndexer implements Indexer {
             booleanQuery.add(query, BooleanClause.Occur.MUST);
         }
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(),
-                    "Query getObject(String, Class): " + booleanQuery.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query getObject(String, Class): {}", booleanQuery.toString());
         }
 
         List<Document> documents = findDocuments(booleanQuery);
@@ -498,9 +473,8 @@ public class DefaultIndexer implements Indexer {
             booleanQuery.add(query, BooleanClause.Occur.MUST);
         }
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(),
-                    "Query getObjects(String, Class): " + booleanQuery.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query getObjects(String, Class): {}", booleanQuery.toString());
         }
 
         List<Document> documents = findDocuments(booleanQuery);
@@ -530,9 +504,8 @@ public class DefaultIndexer implements Indexer {
             booleanQuery.add(query, BooleanClause.Occur.MUST);
         }
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(this.getClass().getSimpleName(),
-                    "Query getObjects(String, Resource): " + booleanQuery.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Query getObjects(String, Resource): {}", booleanQuery.toString());
         }
 
         List<Document> documents = findDocuments(booleanQuery);
@@ -545,7 +518,7 @@ public class DefaultIndexer implements Indexer {
 
     @Override
     public Searchable deleteObject(final Searchable object, final Resource resource)
-            throws ParseException, IOException {
+            throws IOException {
         String jsonString = resource.serialize(object);
         Object jsonObject = JsonPath.read(jsonString, "$");
         deleteObject(jsonObject, resource, getIndexWriter());
@@ -555,7 +528,7 @@ public class DefaultIndexer implements Indexer {
 
     @Override
     public Searchable createObject(final Searchable object, final Resource resource)
-            throws ParseException, IOException {
+            throws IOException {
         String jsonString = resource.serialize(object);
         Object jsonObject = JsonPath.read(jsonString, "$");
         writeObject(jsonObject, resource, getIndexWriter());
@@ -565,7 +538,7 @@ public class DefaultIndexer implements Indexer {
 
     @Override
     public Searchable updateObject(final Searchable object, final Resource resource)
-            throws ParseException, IOException {
+            throws IOException {
         String jsonString = resource.serialize(object);
         Object jsonObject = JsonPath.read(jsonString, "$");
         updateObject(jsonObject, resource, getIndexWriter());

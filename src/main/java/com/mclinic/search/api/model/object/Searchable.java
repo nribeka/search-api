@@ -16,10 +16,8 @@
 
 package com.mclinic.search.api.model.object;
 
-import com.mclinic.search.api.Loggable;
-
 /**
  * Top level object for the search api. All object must implement this interface.
  */
-public interface Searchable extends Loggable {
+public interface Searchable {
 }
