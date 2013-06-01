@@ -1,0 +1,13 @@
+# Resource configuration
+resource.name=Patient Resource
+node.root=$
+resource.object=com.muzima.search.api.sample.domain.Patient
+algorithm.class=com.muzima.search.api.sample.algorithm.PatientAlgorithm
+resolver.class=com.muzima.search.api.sample.resolver.PatientResolver
+field.unique=uuid
+# Mapping
+uuid=$['uuid']
+identifier=$['patientIdentifier.identifier']
+givenName=$['personName.givenName']
+middleName=$['personName.middleName']
+familyName=$['personName.familyName']
